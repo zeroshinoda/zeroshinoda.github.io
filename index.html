@@ -33,12 +33,6 @@
     <script type="text/babel">
         const { useState, useEffect, useMemo } = React;
 
-        // --- EMBEDDED DATA ---
-        // We embed the CSV data directly to avoid CORS errors when opening index.html locally via file://
-        const CSV_DATA = `Kanji,Level,HanViet,On_Kana,On_Romaji,Kun_Kana,Kun_Romaji,Examples
-一,5,Nhất,"イチ, イツ","ichi, itsu","ひと-, ひと.つ","hito-, hitotsu","一つ (ひとつ) [hitotsu]: One thing; 一人 (ひとり) [hitori]: One person"
-二,5,Nhị,ニ,ni,"ふた, ふた.つ","futa, futatsu","二月 (にがつ) [nigatsu]: February; 二人 (ふたり) [futari]: Two people"`;
-
         // --- ICONS ---
         const Settings = (props) => (
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
@@ -61,14 +55,12 @@
 
         // --- UTILS ---
 
-        // Robust CSV Parser that handles quoted fields containing commas
+        // Robust CSV Parser
         const parseCSV = (csvText) => {
             const lines = csvText.trim().split(/\r?\n/);
-            if (lines.length < 2) return []; // Header only or empty
+            if (lines.length < 2) return []; 
 
-            const headers = lines[0].split(',');
             const data = [];
-
             // Regex to match CSV fields: quoted OR non-comma-separated
             const regex = /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g;
 
@@ -79,67 +71,44 @@
                 const matches = [];
                 let match = regex.exec(line);
                 while (match) {
-                    // Remove leading comma/newline and quotes if present
-                    let val = match[1] || match[0]; // match[1] is the capturing group for content
+                    let val = match[1] || match[0];
                     if (val.startsWith(',')) val = val.substring(1);
                     if (val.startsWith('"') && val.endsWith('"')) {
                         val = val.substring(1, val.length - 1);
-                        val = val.replace(/""/g, '"'); // Unescape double quotes
+                        val = val.replace(/""/g, '"'); 
                     }
                     matches.push(val.trim());
                     match = regex.exec(line);
-                    // Prevent infinite loop on zero-length matches at end of string
                     if (match && match.index === regex.lastIndex) regex.lastIndex++; 
-                    if (matches.length >= 8) break; // We expect 8 columns
+                    if (matches.length >= 8) break; 
                 }
 
-                // Fallback for simple split if regex fails or simpler line
                 const row = matches.length > 0 ? matches : line.split(','); 
-                
-                if (row.length >= 7) { // Ensure enough columns
+                if (row.length >= 7) { 
                    data.push(transformRow(row));
                 }
             }
             return data;
         };
 
-        // Transform CSV row array to App Object structure
         const transformRow = (row) => {
-            // CSV: Kanji, Level, HanViet, On_Kana, On_Romaji, Kun_Kana, Kun_Romaji, Examples
-            // Note: Indices based on the CSV structure generated previously
-            
             const [kanji, level, hanviet, onKanaStr, onRomajiStr, kunKanaStr, kunRomajiStr, examplesStr] = row;
 
-            // Helper to pair Kana/Romaji
             const parseReadings = (kanaStr, romajiStr) => {
                 if (!kanaStr || kanaStr === 'null') return [];
                 const kanas = kanaStr.split(',').map(s => s.trim());
                 const romajis = romajiStr ? romajiStr.split(',').map(s => s.trim()) : [];
-                
-                return kanas.map((k, i) => ({
-                    kana: k,
-                    romaji: romajis[i] || ''
-                }));
+                return kanas.map((k, i) => ({ kana: k, romaji: romajis[i] || '' }));
             };
 
-            // Helper to parse Examples string
-            // Format: "Text (Furi) [Romaji]: Meaning; ..."
             const parseExamples = (exStr) => {
                 if (!exStr) return [];
                 const rawExamples = exStr.split(';');
                 return rawExamples.map(raw => {
-                    // Regex to extract parts: Text (Furi) [Romaji]: Meaning
-                    // Loose matching to be forgiving
                     const match = raw.match(/([^(]+)\s*\(([^)]+)\)\s*\[([^\]]+)\]:\s*(.+)/);
                     if (match) {
-                        return {
-                            text: match[1].trim(),
-                            furi: match[2].trim(),
-                            romaji: match[3].trim(),
-                            mean: match[4].trim()
-                        };
+                        return { text: match[1].trim(), furi: match[2].trim(), romaji: match[3].trim(), mean: match[4].trim() };
                     }
-                    // Fallback if format doesn't match perfectly
                     return { text: raw.trim(), furi: '', romaji: '', mean: '' };
                 }).filter(e => e.text);
             };
@@ -180,12 +149,10 @@
         };
 
         function App() {
-            // Data State
             const [kanjiData, setKanjiData] = useState([]);
             const [isLoading, setIsLoading] = useState(true);
             const [error, setError] = useState(null);
 
-            // UI State
             const [targetLevel, setTargetLevel] = useState(5); 
             const [isFlipped, setIsFlipped] = useState(false);
             const [deck, setDeck] = useState([]);
@@ -194,15 +161,20 @@
             const [isAnimating, setIsAnimating] = useState(false);
             const [showRomaji, setShowRomaji] = useState(true);
 
-            // Load Data
+            // FETCH DATA FROM FILE
             useEffect(() => {
-                const loadData = () => {
+                const loadData = async () => {
                     try {
-                        // Parse embedded CSV data directly
-                        const parsedData = parseCSV(CSV_DATA);
-                        setKanjiData(parsedData);
+                        const response = await fetch('joyo_kanji_final.csv');
+                        if (!response.ok) {
+                            throw new Error(`Failed to load CSV file (${response.status}). Ensure "joyo_kanji_final.csv" is in the same folder.`);
+                        }
+                        const text = await response.text();
+                        const parsedData = parseCSV(text);
                         
-                        // Initialize Deck
+                        if (parsedData.length === 0) throw new Error("CSV file was empty or could not be parsed.");
+
+                        setKanjiData(parsedData);
                         setDeck(shuffleArray(parsedData)); 
                         setIsLoading(false);
                     } catch (err) {
@@ -214,11 +186,25 @@
                 loadData();
             }, []);
 
-            // Filter deck when Level changes
             const handleLevelChange = (newLevel) => {
                 setTargetLevel(newLevel);
-                // Filter only if we had more data (currently just N5, but built for expansion)
+                // Filter. Note: If N1 (level 1) is selected, we usually want >= 1 (all). 
+                // But typically users want "Level N5" to mean N5 cards only, or N5 and easier?
+                // Usually flashcards work by "This level and below" or "Just this level". 
+                // Let's assume filtering for "This specific level" for targeted practice, 
+                // or change logic to (k) => k.level >= newLevel for cumulative.
+                // Let's stick to cumulative difficulty (e.g. N5 includes only N5, N1 includes everything?)
+                // Actually, standard logic: 
+                // If I pick N5, I want N5 cards. If I pick N1, I want N1 cards.
+                // But you might want "N5 and up". 
+                // Current Logic: k.level >= newLevel. 
+                // Since N5=Easiest(5) and N1=Hardest(1).
+                // If I select N5 (5), k.level >= 5 matches 5. (Just N5).
+                // If I select N1 (1), k.level >= 1 matches 1,2,3,4,5. (All cards).
                 const filtered = kanjiData.filter((k) => k.level >= newLevel);
+                
+                // If we want EXACT level match instead, use: k.level === newLevel
+                
                 setDeck(shuffleArray(filtered.length > 0 ? filtered : kanjiData));
                 setCurrentIndex(0);
                 setIsFlipped(false);
@@ -259,7 +245,6 @@
                 { value: 1, label: "N1 (Advanced)", count: kanjiData.filter(k => k.level === 1).length },
             ], [kanjiData]);
 
-            // --- RENDER LOADING / ERROR ---
             if (isLoading) return (
                 <div className="h-screen w-full flex flex-col items-center justify-center text-slate-600 bg-slate-50">
                     <div className="animate-spin w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full mb-4"></div>
@@ -270,13 +255,17 @@
             if (error) return (
                 <div className="h-screen w-full flex flex-col items-center justify-center text-slate-600 bg-slate-50 p-6 text-center">
                     <div className="text-rose-500 font-bold text-xl mb-2">Error Loading Data</div>
-                    <div className="max-w-md">{error}</div>
+                    <div className="max-w-md mb-4">{error}</div>
+                    <div className="text-sm text-slate-400">
+                        1. Combine all CSV parts into one file named <b>joyo_kanji_final.csv</b><br/>
+                        2. Ensure the first line is the header row.<br/>
+                        3. Upload it to the same folder as index.html
+                    </div>
                 </div>
             );
 
             if (!currentCard) return <div className="p-10 text-center">No cards found.</div>;
 
-            // --- RENDER MAIN UI ---
             return (
                 <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col overflow-hidden selection:bg-rose-200">
                 
