@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kanji Flashcards</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel (to compile JSX in browser) -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        /* Smooth scrolling for card content */
+        .card-content::-webkit-scrollbar { width: 6px; }
+        .card-content::-webkit-scrollbar-track { background: transparent; }
+        .card-content::-webkit-scrollbar-thumb { background-color: #e2e8f0; border-radius: 20px; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- EMBEDDED DATA ---
+        // We embed the CSV data directly to avoid CORS errors when opening index.html locally via file://
+        const CSV_DATA = `Kanji,Level,HanViet,On_Kana,On_Romaji,Kun_Kana,Kun_Romaji,Examples
+一,5,Nhất,"イチ, イツ","ichi, itsu","ひと-, ひと.つ","hito-, hitotsu","一つ (ひとつ) [hitotsu]: One thing; 一人 (ひとり) [hitori]: One person"
+二,5,Nhị,ニ,ni,"ふた, ふた.つ","futa, futatsu","二月 (にがつ) [nigatsu]: February; 二人 (ふたり) [futari]: Two people"`;
+
+        // --- ICONS ---
+        const Settings = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+        );
+        const ChevronRight = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="m9 18 6-6-6-6"/></svg>
+        );
+        const BookOpen = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+        );
+        const RotateCcw = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        );
+        const ToggleLeft = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="20" height="12" x="2" y="6" rx="6" ry="6"/><circle cx="8" cy="12" r="2"/></svg>
+        );
+        const ToggleRight = (props) => (
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="20" height="12" x="2" y="6" rx="6" ry="6"/><circle cx="16" cy="12" r="2"/></svg>
+        );
+
+        // --- UTILS ---
+
+        // Robust CSV Parser that handles quoted fields containing commas
+        const parseCSV = (csvText) => {
+            const lines = csvText.trim().split(/\r?\n/);
+            if (lines.length < 2) return []; // Header only or empty
+
+            const headers = lines[0].split(',');
+            const data = [];
+
+            // Regex to match CSV fields: quoted OR non-comma-separated
+            const regex = /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g;
+
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line.trim()) continue;
+
+                const matches = [];
+                let match = regex.exec(line);
+                while (match) {
+                    // Remove leading comma/newline and quotes if present
+                    let val = match[1] || match[0]; // match[1] is the capturing group for content
+                    if (val.startsWith(',')) val = val.substring(1);
+                    if (val.startsWith('"') && val.endsWith('"')) {
+                        val = val.substring(1, val.length - 1);
+                        val = val.replace(/""/g, '"'); // Unescape double quotes
+                    }
+                    matches.push(val.trim());
+                    match = regex.exec(line);
+                    // Prevent infinite loop on zero-length matches at end of string
+                    if (match && match.index === regex.lastIndex) regex.lastIndex++; 
+                    if (matches.length >= 8) break; // We expect 8 columns
+                }
+
+                // Fallback for simple split if regex fails or simpler line
+                const row = matches.length > 0 ? matches : line.split(','); 
+                
+                if (row.length >= 7) { // Ensure enough columns
+                   data.push(transformRow(row));
+                }
+            }
+            return data;
+        };
+
+        // Transform CSV row array to App Object structure
+        const transformRow = (row) => {
+            // CSV: Kanji, Level, HanViet, On_Kana, On_Romaji, Kun_Kana, Kun_Romaji, Examples
+            // Note: Indices based on the CSV structure generated previously
+            
+            const [kanji, level, hanviet, onKanaStr, onRomajiStr, kunKanaStr, kunRomajiStr, examplesStr] = row;
+
+            // Helper to pair Kana/Romaji
+            const parseReadings = (kanaStr, romajiStr) => {
+                if (!kanaStr || kanaStr === 'null') return [];
+                const kanas = kanaStr.split(',').map(s => s.trim());
+                const romajis = romajiStr ? romajiStr.split(',').map(s => s.trim()) : [];
+                
+                return kanas.map((k, i) => ({
+                    kana: k,
+                    romaji: romajis[i] || ''
+                }));
+            };
+
+            // Helper to parse Examples string
+            // Format: "Text (Furi) [Romaji]: Meaning; ..."
+            const parseExamples = (exStr) => {
+                if (!exStr) return [];
+                const rawExamples = exStr.split(';');
+                return rawExamples.map(raw => {
+                    // Regex to extract parts: Text (Furi) [Romaji]: Meaning
+                    // Loose matching to be forgiving
+                    const match = raw.match(/([^(]+)\s*\(([^)]+)\)\s*\[([^\]]+)\]:\s*(.+)/);
+                    if (match) {
+                        return {
+                            text: match[1].trim(),
+                            furi: match[2].trim(),
+                            romaji: match[3].trim(),
+                            mean: match[4].trim()
+                        };
+                    }
+                    // Fallback if format doesn't match perfectly
+                    return { text: raw.trim(), furi: '', romaji: '', mean: '' };
+                }).filter(e => e.text);
+            };
+
+            return {
+                kanji: kanji,
+                level: parseInt(level) || 5,
+                hanviet: hanviet,
+                on: parseReadings(onKanaStr, onRomajiStr),
+                kun: parseReadings(kunKanaStr, kunRomajiStr),
+                examples: parseExamples(examplesStr)
+            };
+        };
+
+        const shuffleArray = (array) => {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+        };
+
+        // --- COMPONENTS ---
+
+        const FuriganaText = ({ text, furi, romaji, showRomaji }) => {
+            return (
+                <div className="flex flex-col items-center justify-center">
+                    <div className="text-[10px] text-slate-500 leading-none mb-0.5 min-h-[10px]">{furi}</div>
+                    <div className="text-lg leading-none font-medium text-slate-800">{text}</div>
+                    {showRomaji && (
+                        <div className="text-[10px] text-rose-500 font-medium leading-tight mt-0.5 animate-in fade-in duration-300">
+                        {romaji}
+                        </div>
+                    )}
+                </div>
+            );
+        };
+
+        function App() {
+            // Data State
+            const [kanjiData, setKanjiData] = useState([]);
+            const [isLoading, setIsLoading] = useState(true);
+            const [error, setError] = useState(null);
+
+            // UI State
+            const [targetLevel, setTargetLevel] = useState(5); 
+            const [isFlipped, setIsFlipped] = useState(false);
+            const [deck, setDeck] = useState([]);
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [showSettings, setShowSettings] = useState(false);
+            const [isAnimating, setIsAnimating] = useState(false);
+            const [showRomaji, setShowRomaji] = useState(true);
+
+            // Load Data
+            useEffect(() => {
+                const loadData = () => {
+                    try {
+                        // Parse embedded CSV data directly
+                        const parsedData = parseCSV(CSV_DATA);
+                        setKanjiData(parsedData);
+                        
+                        // Initialize Deck
+                        setDeck(shuffleArray(parsedData)); 
+                        setIsLoading(false);
+                    } catch (err) {
+                        console.error(err);
+                        setError(err.message);
+                        setIsLoading(false);
+                    }
+                };
+                loadData();
+            }, []);
+
+            // Filter deck when Level changes
+            const handleLevelChange = (newLevel) => {
+                setTargetLevel(newLevel);
+                // Filter only if we had more data (currently just N5, but built for expansion)
+                const filtered = kanjiData.filter((k) => k.level >= newLevel);
+                setDeck(shuffleArray(filtered.length > 0 ? filtered : kanjiData));
+                setCurrentIndex(0);
+                setIsFlipped(false);
+                setShowSettings(false);
+            };
+
+            const nextCard = () => {
+                if (isAnimating) return;
+                setIsAnimating(true);
+                if (isFlipped) {
+                    setIsFlipped(false);
+                    setTimeout(() => advanceIndex(), 300);
+                } else {
+                    advanceIndex();
+                }
+            };
+
+            const advanceIndex = () => {
+                setTimeout(() => {
+                    if (currentIndex >= deck.length - 1) {
+                        setDeck(shuffleArray(deck));
+                        setCurrentIndex(0);
+                    } else {
+                        setCurrentIndex((prev) => prev + 1);
+                    }
+                    setIsAnimating(false);
+                }, 200);
+            };
+
+            const currentCard = deck[currentIndex];
+            const progressPercentage = deck.length > 0 ? ((currentIndex + 1) / deck.length) * 100 : 0;
+
+            const levels = useMemo(() => [
+                { value: 5, label: "N5 (Beginner)", count: kanjiData.filter(k => k.level === 5).length },
+                { value: 4, label: "N4", count: kanjiData.filter(k => k.level === 4).length },
+                { value: 3, label: "N3", count: kanjiData.filter(k => k.level === 3).length },
+                { value: 2, label: "N2", count: kanjiData.filter(k => k.level === 2).length },
+                { value: 1, label: "N1 (Advanced)", count: kanjiData.filter(k => k.level === 1).length },
+            ], [kanjiData]);
+
+            // --- RENDER LOADING / ERROR ---
+            if (isLoading) return (
+                <div className="h-screen w-full flex flex-col items-center justify-center text-slate-600 bg-slate-50">
+                    <div className="animate-spin w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full mb-4"></div>
+                    <div>Loading Kanji Database...</div>
+                </div>
+            );
+
+            if (error) return (
+                <div className="h-screen w-full flex flex-col items-center justify-center text-slate-600 bg-slate-50 p-6 text-center">
+                    <div className="text-rose-500 font-bold text-xl mb-2">Error Loading Data</div>
+                    <div className="max-w-md">{error}</div>
+                </div>
+            );
+
+            if (!currentCard) return <div className="p-10 text-center">No cards found.</div>;
+
+            // --- RENDER MAIN UI ---
+            return (
+                <div className="min-h-screen bg-slate-50 text-slate-800 font-sans flex flex-col overflow-hidden selection:bg-rose-200">
+                
+                <header className="px-6 py-4 flex justify-between items-center bg-white shadow-sm z-10">
+                    <div className="flex items-center gap-2">
+                    <BookOpen className="w-6 h-6 text-rose-500" />
+                    <h1 className="text-xl font-bold tracking-tight text-slate-800">Kanji<span className="text-rose-500">Card</span></h1>
+                    <span className="text-xs bg-slate-100 text-slate-500 px-2 py-0.5 rounded-full ml-2">{kanjiData.length} kanji</span>
+                    </div>
+                    
+                    <button 
+                    onClick={() => setShowSettings(true)}
+                    className="p-2 rounded-full hover:bg-slate-100 transition-colors text-slate-600"
+                    >
+                    <Settings className="w-6 h-6" />
+                    </button>
+                </header>
+
+                <div className="w-full h-1.5 bg-slate-200">
+                    <div 
+                    className="h-full bg-rose-500 transition-all duration-500 ease-out"
+                    style={{ width: `${progressPercentage}%` }}
+                    />
+                </div>
+
+                <main className="flex-1 flex flex-col items-center justify-center p-6 relative perspective-1000">
+                    <div className="absolute top-6 text-sm font-medium text-slate-400 uppercase tracking-widest">
+                    Level N{targetLevel} • Card {currentIndex + 1}/{deck.length}
+                    </div>
+
+                    <div 
+                    className="relative w-full max-w-sm aspect-[3/4] cursor-pointer group"
+                    onClick={() => !isAnimating && setIsFlipped(!isFlipped)}
+                    style={{ perspective: '1000px' }}
+                    >
+                    <div 
+                        className={`w-full h-full relative transition-all duration-500 transform-style-3d shadow-2xl rounded-3xl ${isFlipped ? 'rotate-y-180' : ''}`}
+                        style={{ transformStyle: 'preserve-3d', transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
+                    >
+                        {/* FRONT */}
+                        <div 
+                        className="absolute inset-0 backface-hidden bg-white rounded-3xl flex flex-col items-center justify-center border border-slate-100 overflow-hidden"
+                        style={{ backfaceVisibility: 'hidden' }}
+                        >
+                            <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-rose-50 rounded-full blur-2xl opacity-50"></div>
+                            <div className="absolute bottom-[-20px] left-[-20px] w-32 h-32 bg-slate-50 rounded-full blur-xl opacity-80"></div>
+
+                            <div className="relative z-10 flex flex-col items-center">
+                                <span className="text-9xl font-light text-slate-800 mb-4 font-serif">{currentCard.kanji}</span>
+                                <span className="text-sm text-slate-400 font-medium">Tap to reveal</span>
+                            </div>
+                        </div>
+
+                        {/* BACK */}
+                        <div 
+                        className="card-content absolute inset-0 backface-hidden bg-white rounded-3xl flex flex-col p-6 border border-slate-100 overflow-y-auto"
+                        style={{ backfaceVisibility: 'hidden', transform: 'rotateY(180deg)' }}
+                        >
+                            <div className="flex items-start justify-between border-b border-slate-100 pb-4 mb-4">
+                                <div><div className="text-5xl font-serif text-slate-800">{currentCard.kanji}</div></div>
+                                <div className="text-right">
+                                    <div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Hán Việt</div>
+                                    <div className="text-xl font-bold text-rose-600">{currentCard.hanviet}</div>
+                                </div>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-4 mb-6">
+                                <div className="bg-slate-50 p-3 rounded-xl">
+                                    <div className="text-xs text-slate-400 font-bold mb-1">ONYOMI</div>
+                                    <div className="flex flex-wrap gap-x-3 gap-y-2">
+                                        {currentCard.on.map((r, i) => (
+                                        <div key={i} className="flex flex-col">
+                                            <span className="text-slate-700 font-medium leading-none">{r.kana}</span>
+                                            {showRomaji && <span className="text-[10px] text-rose-500 leading-tight">{r.romaji}</span>}
+                                        </div>
+                                        ))}
+                                        {currentCard.on.length === 0 && <span className="text-slate-400 text-sm">-</span>}
+                                    </div>
+                                </div>
+                                <div className="bg-slate-50 p-3 rounded-xl">
+                                    <div className="text-xs text-slate-400 font-bold mb-1">KUNYOMI</div>
+                                    <div className="flex flex-wrap gap-x-3 gap-y-2">
+                                        {currentCard.kun.map((r, i) => (
+                                        <div key={i} className="flex flex-col">
+                                            <span className="text-slate-700 font-medium leading-none">{r.kana}</span>
+                                            {showRomaji && <span className="text-[10px] text-rose-500 leading-tight">{r.romaji}</span>}
+                                        </div>
+                                        ))}
+                                        {currentCard.kun.length === 0 && <span className="text-slate-400 text-sm">-</span>}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="flex-1">
+                                <div className="text-xs text-slate-400 font-bold mb-3 uppercase tracking-wider">Examples</div>
+                                <div className="space-y-4">
+                                {currentCard.examples.map((ex, i) => (
+                                    <div key={i} className="flex items-center justify-between group/ex pb-2 border-b border-slate-50 last:border-0 last:pb-0">
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-1 h-10 bg-rose-200 rounded-full"></div>
+                                        <FuriganaText text={ex.text} furi={ex.furi} romaji={ex.romaji} showRomaji={showRomaji} />
+                                    </div>
+                                    <div className="text-sm text-slate-500 text-right max-w-[50%] leading-tight">{ex.mean}</div>
+                                    </div>
+                                ))}
+                                {currentCard.examples.length === 0 && <span className="text-slate-400 text-sm">No examples available</span>}
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                    </div>
+                </main>
+
+                <footer className="p-6 pb-8 bg-white border-t border-slate-100 flex justify-center items-center gap-6">
+                    <button 
+                    onClick={() => {
+                        setDeck(shuffleArray(deck));
+                        setCurrentIndex(0);
+                        setIsFlipped(false);
+                    }}
+                    className="w-12 h-12 flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-full transition-all"
+                    title="Reshuffle Deck"
+                    >
+                    <RotateCcw className="w-6 h-6" />
+                    </button>
+
+                    <button 
+                    onClick={nextCard}
+                    className="flex-1 max-w-xs bg-slate-900 hover:bg-slate-800 active:scale-95 text-white h-14 rounded-2xl font-bold text-lg shadow-xl shadow-slate-200 flex items-center justify-center gap-2 transition-all"
+                    >
+                    <span>Next Kanji</span>
+                    <ChevronRight className="w-5 h-5" />
+                    </button>
+                </footer>
+
+                {showSettings && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                    <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setShowSettings(false)}></div>
+                    <div className="bg-white rounded-3xl w-full max-w-sm shadow-2xl relative z-10 p-6 animate-in fade-in zoom-in duration-200">
+                        <div className="flex justify-between items-center mb-6">
+                        <h2 className="text-2xl font-bold text-slate-800">Settings</h2>
+                        <button onClick={() => setShowSettings(false)} className="p-2 text-slate-400 hover:text-slate-600">✕</button>
+                        </div>
+
+                        <div className="space-y-6">
+                        <div className="bg-slate-50 p-4 rounded-xl flex items-center justify-between">
+                            <div>
+                            <div className="font-bold text-slate-700">Show Romaji</div>
+                            <div className="text-xs text-slate-500">Show pronunciation guide</div>
+                            </div>
+                            <button 
+                            onClick={() => setShowRomaji(!showRomaji)}
+                            className="text-rose-500 transition-colors"
+                            >
+                            {showRomaji 
+                                ? <ToggleRight className="w-10 h-10 fill-current" /> 
+                                : <ToggleLeft className="w-10 h-10 text-slate-300" />
+                            }
+                            </button>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="text-sm font-bold text-slate-400 uppercase tracking-wider">Select Level</div>
+                            <div className="grid gap-2">
+                            {levels.map((lvl) => (
+                                <button
+                                key={lvl.value}
+                                onClick={() => handleLevelChange(lvl.value)}
+                                className={`p-4 rounded-xl text-left font-medium transition-all flex justify-between items-center
+                                    ${targetLevel === lvl.value 
+                                    ? 'bg-rose-50 text-rose-600 border-2 border-rose-500' 
+                                    : 'bg-slate-50 text-slate-600 border-2 border-transparent hover:bg-slate-100'
+                                    }`}
+                                >
+                                <span>{lvl.label}</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs text-slate-400">{lvl.count} kanji</span>
+                                    {targetLevel === lvl.value && <div className="w-3 h-3 bg-rose-500 rounded-full"></div>}
+                                </div>
+                                </button>
+                            ))}
+                            </div>
+                        </div>
+                        </div>
+
+                        <div className="mt-8 pt-6 border-t border-slate-100 text-center text-xs text-slate-400">
+                        Current Deck Size: {deck.length} Cards
+                        </div>
+                    </div>
+                    </div>
+                )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
