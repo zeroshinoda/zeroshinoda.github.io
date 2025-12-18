@@ -117,7 +117,7 @@
             };
 
             return {
-                id: Math.random().toString(36).substr(2, 9), // Unique ID for keying
+                id: Math.random().toString(36).substr(2, 9), 
                 kanji: kanji,
                 level: parseInt(level) || 5,
                 hanviet: hanviet,
@@ -152,12 +152,53 @@
             );
         };
 
+        const LevelSelector = ({ onSelect, title, description, showCount }) => {
+            const levels = [
+                { val: 5, label: "N5", desc: "Beginner" },
+                { val: 4, label: "N4", desc: "Basic" },
+                { val: 3, label: "N3", desc: "Intermediate" },
+                { val: 2, label: "N2", desc: "Advanced" },
+                { val: 1, label: "N1", desc: "Native" },
+            ];
+
+            return (
+                <div className="h-screen flex flex-col p-6 bg-slate-50">
+                    <button onClick={() => onSelect(null)} className="text-slate-400 mb-6 font-bold self-start">← Back</button>
+                    <h2 className="text-2xl font-bold mb-2">{title}</h2>
+                    <p className="text-sm text-slate-400 mb-6">{description}</p>
+                    
+                    <div className="grid gap-3">
+                        {levels.map(l => (
+                            <button 
+                                key={l.val}
+                                onClick={() => onSelect(l.val)}
+                                className="p-4 bg-white rounded-xl shadow-sm border border-slate-100 flex justify-between items-center hover:border-rose-300 active:scale-95 transition-all"
+                            >
+                                <div>
+                                    <div className="font-bold text-xl text-slate-800">{l.label}</div>
+                                    <div className="text-xs text-slate-400">{l.desc}</div>
+                                </div>
+                                <div className="flex items-center gap-3">
+                                    {showCount && <span className="text-xs text-slate-400 font-medium">All Cards</span>}
+                                    <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center">
+                                        →
+                                    </div>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
         function App() {
             // App State
             const [kanjiData, setKanjiData] = useState([]);
             const [isLoading, setIsLoading] = useState(true);
             const [error, setError] = useState(null);
-            const [mode, setMode] = useState('menu'); // menu, setup-practice, active
+            
+            // Mode State: 'menu', 'setup-study', 'setup-practice', 'active'
+            const [mode, setMode] = useState('menu'); 
             
             // Session State
             const [deck, setDeck] = useState([]);
@@ -172,7 +213,7 @@
             // Swipe/Drag State
             const [dragDelta, setDragDelta] = useState({ x: 0, y: 0 });
             const [isDragging, setIsDragging] = useState(false);
-            const [swipeResult, setSwipeResult] = useState(null); // 'left' or 'right' for animation
+            const [swipeResult, setSwipeResult] = useState(null); 
 
             // --- DATA LOADING ---
             useEffect(() => {
@@ -193,43 +234,39 @@
                 loadData();
             }, []);
 
-            // --- GAME LOGIC ---
+            // --- GAME MODES ---
 
-            const startStudyMode = () => {
-                const newDeck = shuffleArray(kanjiData);
-                setDeck(newDeck);
-                setInitialDeckSize(newDeck.length);
+            const initSession = (selectedDeck) => {
+                setDeck(selectedDeck);
+                setInitialDeckSize(selectedDeck.length);
                 setFinishedCount(0);
-                setMode('active');
                 setSwipeResult(null);
                 setIsFlipped(false);
+                setDragDelta({ x: 0, y: 0 });
+                setMode('active');
+            };
+
+            const startStudyMode = (level) => {
+                if (!level) { setMode('menu'); return; }
+                // Study Mode: Cumulative filter (Level X and everything simpler)
+                // Since N5=5 (Easiest), N1=1 (Hardest).
+                // If I select N3(3), I want 3, 4, 5. So level >= 3.
+                const filtered = kanjiData.filter(k => k.level >= level);
+                initSession(shuffleArray(filtered));
             };
 
             const startPracticeMode = (level) => {
-                // Logic: Select cards from level AND below (N5 is 5, N1 is 1).
-                // E.g. Select N4 (4) -> Includes 4 and 5.
-                // Formula: k.level >= level
+                if (!level) { setMode('menu'); return; }
                 const pool = kanjiData.filter(k => k.level >= level);
-                
-                // Bonus Logic
                 const bonuses = { 5: 0, 4: 5, 3: 10, 2: 15, 1: 20 };
                 const count = 10 + (bonuses[level] || 0);
-
                 const shuffled = shuffleArray(pool);
-                const selected = shuffled.slice(0, count);
-
-                setDeck(selected);
-                setInitialDeckSize(selected.length);
-                setFinishedCount(0);
-                setMode('active');
-                setSwipeResult(null);
-                setIsFlipped(false);
+                initSession(shuffled.slice(0, count));
             };
 
-            // --- SWIPE HANDLERS ---
+            // --- SWIPE LOGIC ---
             
-            const handleSwipeRight = () => {
-                // Studied -> Remove from deck
+            const handleSwipeRight = () => { // Studied
                 setSwipeResult('right');
                 setTimeout(() => {
                     setDeck(prev => prev.slice(1));
@@ -240,16 +277,13 @@
                 }, 300);
             };
 
-            const handleSwipeLeft = () => {
-                // Practice More -> Add back to random position
+            const handleSwipeLeft = () => { // Practice More
                 setSwipeResult('left');
                 const currentCard = deck[0];
                 setTimeout(() => {
                     setDeck(prev => {
                         const remaining = prev.slice(1);
-                        if (remaining.length === 0) return [currentCard]; // Only 1 card left
-                        
-                        // Insert at random position (not 0, to avoid immediate repeat)
+                        if (remaining.length === 0) return [currentCard]; 
                         const insertIdx = Math.floor(Math.random() * remaining.length) + 1;
                         const newDeck = [...remaining];
                         newDeck.splice(insertIdx, 0, currentCard);
@@ -261,61 +295,34 @@
                 }, 300);
             };
 
-            // --- DRAG EVENTS ---
             const dragStartRef = useRef(null);
-
             const handlePointerDown = (e) => {
                 if (swipeResult) return;
                 setIsDragging(true);
                 dragStartRef.current = { x: e.clientX || e.touches[0].clientX, y: e.clientY || e.touches[0].clientY };
             };
-
             const handlePointerMove = (e) => {
                 if (!isDragging || !dragStartRef.current) return;
                 const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-                const deltaX = clientX - dragStartRef.current.x;
-                setDragDelta({ x: deltaX, y: 0 }); // Only track X for simplicity
+                setDragDelta({ x: clientX - dragStartRef.current.x, y: 0 });
             };
-
             const handlePointerUp = () => {
                 if (!isDragging) return;
                 setIsDragging(false);
-                
-                const threshold = 100; // px to trigger swipe
-                if (dragDelta.x > threshold) {
-                    handleSwipeRight();
-                } else if (dragDelta.x < -threshold) {
-                    handleSwipeLeft();
-                } else {
-                    // Snap back
-                    setDragDelta({ x: 0, y: 0 });
-                }
+                if (dragDelta.x > 100) handleSwipeRight();
+                else if (dragDelta.x < -100) handleSwipeLeft();
+                else setDragDelta({ x: 0, y: 0 });
+            };
+            const handleClick = () => {
+                if (Math.abs(dragDelta.x) < 10) setIsFlipped(!isFlipped);
             };
 
-            const handleClick = (e) => {
-                // Only flip if it wasn't a drag (delta small)
-                if (Math.abs(dragDelta.x) < 10) {
-                    setIsFlipped(!isFlipped);
-                }
-            };
+            // --- RENDERING ---
 
-            // --- RENDER HELPERS ---
-
-            const currentCard = deck[0];
-            const progress = initialDeckSize > 0 ? (finishedCount / initialDeckSize) * 100 : 0;
-
-            // --- MAIN RENDER ---
-
-            if (isLoading) return (
-                <div className="h-screen w-full flex flex-col items-center justify-center text-slate-600">
-                    <div className="animate-spin w-8 h-8 border-4 border-rose-500 border-t-transparent rounded-full mb-4"></div>
-                    <div>Loading Kanji...</div>
-                </div>
-            );
-
+            if (isLoading) return <div className="h-screen flex items-center justify-center text-slate-500">Loading Kanji...</div>;
             if (error) return <div className="p-10 text-center text-red-500">{error}</div>;
 
-            // 1. MENU SCREEN
+            // 1. MENU
             if (mode === 'menu') {
                 return (
                     <div className="h-screen flex flex-col items-center justify-center p-6 bg-slate-50">
@@ -323,20 +330,12 @@
                             <h1 className="text-4xl font-bold text-slate-800 mb-2">Kanji<span className="text-rose-500">Master</span></h1>
                             <p className="text-slate-400">Master Japanese Characters</p>
                         </div>
-                        
                         <div className="w-full max-w-sm space-y-4">
-                            <button 
-                                onClick={startStudyMode}
-                                className="w-full py-4 bg-slate-800 text-white rounded-2xl font-bold shadow-lg shadow-slate-200 flex items-center justify-center gap-3 active:scale-95 transition-transform"
-                            >
+                            <button onClick={() => setMode('setup-study')} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-bold shadow-lg shadow-slate-200 flex items-center justify-center gap-3 active:scale-95 transition-transform">
                                 <BookOpen className="w-6 h-6" />
-                                <span>Full Study Mode</span>
+                                <span>Study Mode</span>
                             </button>
-                            
-                            <button 
-                                onClick={() => setMode('setup-practice')}
-                                className="w-full py-4 bg-white text-rose-500 border-2 border-rose-100 rounded-2xl font-bold shadow-sm flex items-center justify-center gap-3 active:scale-95 transition-transform hover:bg-rose-50"
-                            >
+                            <button onClick={() => setMode('setup-practice')} className="w-full py-4 bg-white text-rose-500 border-2 border-rose-100 rounded-2xl font-bold shadow-sm flex items-center justify-center gap-3 active:scale-95 transition-transform hover:bg-rose-50">
                                 <Zap className="w-6 h-6" />
                                 <span>Quick Practice</span>
                             </button>
@@ -345,150 +344,82 @@
                 );
             }
 
-            // 2. SETUP PRACTICE SCREEN
-            if (mode === 'setup-practice') {
-                const levels = [
-                    { val: 5, label: "N5", desc: "Beginner" },
-                    { val: 4, label: "N4", desc: "Basic" },
-                    { val: 3, label: "N3", desc: "Intermediate" },
-                    { val: 2, label: "N2", desc: "Advanced" },
-                    { val: 1, label: "N1", desc: "Native" },
-                ];
-                return (
-                    <div className="h-screen flex flex-col p-6 bg-slate-50">
-                        <button onClick={() => setMode('menu')} className="text-slate-400 mb-6 font-bold">← Back</button>
-                        <h2 className="text-2xl font-bold mb-2">Select Level</h2>
-                        <p className="text-sm text-slate-400 mb-6">You will get a mix of cards from this level and below.</p>
-                        
-                        <div className="grid gap-3">
-                            {levels.map(l => (
-                                <button 
-                                    key={l.val}
-                                    onClick={() => startPracticeMode(l.val)}
-                                    className="p-4 bg-white rounded-xl shadow-sm border border-slate-100 flex justify-between items-center hover:border-rose-300 active:scale-95 transition-all"
-                                >
-                                    <div>
-                                        <div className="font-bold text-xl text-slate-800">{l.label}</div>
-                                        <div className="text-xs text-slate-400">{l.desc}</div>
-                                    </div>
-                                    <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center">
-                                        →
-                                    </div>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-                );
+            // 2. SETUP SCREENS
+            if (mode === 'setup-study') {
+                return <LevelSelector 
+                    onSelect={startStudyMode} 
+                    title="Select Study Level" 
+                    description="Study all kanji from this level and below." 
+                    showCount={true} 
+                />;
             }
 
-            // 3. ACTIVE MODE (Flashcards)
-            if (!currentCard) {
+            if (mode === 'setup-practice') {
+                return <LevelSelector 
+                    onSelect={startPracticeMode} 
+                    title="Select Practice Level" 
+                    description="A quick random session with a mix of cards." 
+                    showCount={false} 
+                />;
+            }
+
+            // 3. GAME COMPLETE
+            const currentCard = deck[0];
+            if (!currentCard && mode === 'active') {
                 return (
                     <div className="h-screen flex flex-col items-center justify-center p-6 text-center">
                         <div className="text-6xl mb-4">🎉</div>
                         <h2 className="text-2xl font-bold text-slate-800 mb-2">Session Complete!</h2>
                         <p className="text-slate-500 mb-8">You studied {finishedCount} cards.</p>
-                        <button 
-                            onClick={() => setMode('menu')}
-                            className="px-8 py-3 bg-rose-500 text-white rounded-full font-bold shadow-lg shadow-rose-200"
-                        >
-                            Back to Menu
-                        </button>
+                        <button onClick={() => setMode('menu')} className="px-8 py-3 bg-rose-500 text-white rounded-full font-bold shadow-lg shadow-rose-200">Back to Menu</button>
                     </div>
                 );
             }
 
-            // Calculate rotations and styles for Drag
-            const rotateDeg = dragDelta.x * 0.1; // Slight rotation when dragging
-            const xPos = dragDelta.x;
+            // 4. ACTIVE CARD
+            const progress = initialDeckSize > 0 ? (finishedCount / initialDeckSize) * 100 : 0;
+            const rotateDeg = dragDelta.x * 0.1;
             const cardStyle = {
-                transform: `translateX(${xPos}px) rotate(${rotateDeg}deg)`,
+                transform: `translateX(${dragDelta.x}px) rotate(${rotateDeg}deg)`,
                 transition: isDragging ? 'none' : 'transform 0.3s ease-out',
                 cursor: isDragging ? 'grabbing' : 'grab'
             };
-            
-            // Animation class if swipe triggered
             let animClass = '';
             if (swipeResult === 'left') animClass = 'animate-swipe-left';
             if (swipeResult === 'right') animClass = 'animate-swipe-right';
 
-            // Opacity for overlays
-            const rightOpacity = Math.min(Math.max(dragDelta.x / 100, 0), 1);
-            const leftOpacity = Math.min(Math.max(-dragDelta.x / 100, 0), 1);
-
             return (
                 <div className="h-screen flex flex-col overflow-hidden bg-slate-50 relative selection:bg-rose-200">
-                    
-                    {/* Header */}
                     <header className="px-6 py-4 flex justify-between items-center z-10">
                         <div className="flex items-center gap-2">
-                            <button onClick={() => setMode('menu')} className="text-slate-400 hover:text-slate-600">
-                                <RotateCcw className="w-5 h-5" />
-                            </button>
-                            <span className="text-sm font-bold text-slate-400">
-                                {finishedCount + 1} / {initialDeckSize + deck.length - 1}
-                            </span>
+                            <button onClick={() => setMode('menu')} className="text-slate-400 hover:text-slate-600"><RotateCcw className="w-5 h-5" /></button>
+                            <span className="text-sm font-bold text-slate-400">{finishedCount + 1} / {initialDeckSize + deck.length - 1}</span>
                         </div>
-                        <button onClick={() => setShowSettings(true)} className="text-slate-400 hover:text-slate-600">
-                            <Settings className="w-6 h-6" />
-                        </button>
+                        <button onClick={() => setShowSettings(true)} className="text-slate-400 hover:text-slate-600"><Settings className="w-6 h-6" /></button>
                     </header>
+                    <div className="w-full h-1 bg-slate-200"><div className="h-full bg-rose-500 transition-all duration-500" style={{ width: `${progress}%` }}></div></div>
 
-                    {/* Progress Bar */}
-                    <div className="w-full h-1 bg-slate-200">
-                        <div className="h-full bg-rose-500 transition-all duration-500" style={{ width: `${progress}%` }}></div>
-                    </div>
-
-                    {/* Card Area */}
                     <main className="flex-1 flex flex-col items-center justify-center p-4 relative w-full max-w-md mx-auto perspective-1000">
-                        
-                        <div 
-                            className={`relative w-full aspect-[3/4] ${animClass}`}
-                            style={cardStyle}
-                            onMouseDown={handlePointerDown}
-                            onMouseMove={handlePointerMove}
-                            onMouseUp={handlePointerUp}
-                            onMouseLeave={handlePointerUp}
-                            onTouchStart={handlePointerDown}
-                            onTouchMove={handlePointerMove}
-                            onTouchEnd={handlePointerUp}
-                        >
-                            {/* Swipe Feedback Overlays */}
-                            <div 
-                                className="absolute top-8 left-8 border-4 border-green-500 text-green-500 font-bold text-3xl px-4 py-2 rounded-xl transform -rotate-12 z-50 pointer-events-none"
-                                style={{ opacity: rightOpacity }}
-                            >
-                                STUDIED
-                            </div>
-                            <div 
-                                className="absolute top-8 right-8 border-4 border-rose-500 text-rose-500 font-bold text-3xl px-4 py-2 rounded-xl transform rotate-12 z-50 pointer-events-none"
-                                style={{ opacity: leftOpacity }}
-                            >
-                                PRACTICE
-                            </div>
+                        <div className={`relative w-full aspect-[3/4] ${animClass}`} style={cardStyle}
+                             onMouseDown={handlePointerDown} onMouseMove={handlePointerMove} onMouseUp={handlePointerUp} onMouseLeave={handlePointerUp}
+                             onTouchStart={handlePointerDown} onTouchMove={handlePointerMove} onTouchEnd={handlePointerUp}>
+                            
+                            <div className="absolute top-8 left-8 border-4 border-green-500 text-green-500 font-bold text-3xl px-4 py-2 rounded-xl transform -rotate-12 z-50 pointer-events-none" style={{ opacity: Math.max(dragDelta.x/100, 0) }}>STUDIED</div>
+                            <div className="absolute top-8 right-8 border-4 border-rose-500 text-rose-500 font-bold text-3xl px-4 py-2 rounded-xl transform rotate-12 z-50 pointer-events-none" style={{ opacity: Math.max(-dragDelta.x/100, 0) }}>PRACTICE</div>
 
-                            {/* The Card Inner (Flip logic) */}
-                            <div 
-                                className={`w-full h-full relative transition-transform duration-500 transform-style-3d shadow-2xl rounded-3xl bg-white`}
-                                style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }}
-                                onClick={handleClick}
-                            >
-                                {/* FRONT FACE */}
+                            <div className={`w-full h-full relative transition-transform duration-500 transform-style-3d shadow-2xl rounded-3xl bg-white`} style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }} onClick={handleClick}>
+                                {/* FRONT */}
                                 <div className="absolute inset-0 backface-hidden rounded-3xl flex flex-col items-center justify-center border border-slate-100 bg-white overflow-hidden z-20">
                                     <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-rose-50 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
-                                    <div className="absolute bottom-[-20px] left-[-20px] w-32 h-32 bg-slate-50 rounded-full blur-xl opacity-80 pointer-events-none"></div>
-
                                     <div className="relative z-10 flex flex-col items-center pointer-events-none no-select">
                                         <div className="text-xs font-bold text-rose-200 mb-4">N{currentCard.level}</div>
                                         <span className="text-9xl font-light text-slate-800 mb-8 font-serif">{currentCard.kanji}</span>
                                         <span className="text-xs text-slate-300 font-medium uppercase tracking-widest">Tap to flip</span>
                                     </div>
                                 </div>
-
-                                {/* BACK FACE - Note the rotate-y-180 class to orient it correctly */}
+                                {/* BACK */}
                                 <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl flex flex-col p-6 border border-slate-100 bg-white overflow-hidden z-20">
                                     <div className="card-content h-full overflow-y-auto pr-1">
-                                        
                                         <div className="flex items-start justify-between border-b border-slate-100 pb-4 mb-4">
                                             <div className="text-5xl font-serif text-slate-800">{currentCard.kanji}</div>
                                             <div className="text-right">
@@ -496,41 +427,20 @@
                                                 <div className="text-xl font-bold text-rose-600">{currentCard.hanviet}</div>
                                             </div>
                                         </div>
-
                                         <div className="grid grid-cols-2 gap-3 mb-4">
                                             <div className="bg-slate-50 p-2 rounded-lg">
                                                 <div className="text-[10px] text-slate-400 font-bold mb-1 uppercase">Onyomi</div>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {currentCard.on.map((r, i) => (
-                                                        <div key={i}>
-                                                            <span className="text-sm font-bold text-slate-700">{r.kana}</span>
-                                                            {showRomaji && <div className="text-[9px] text-rose-400">{r.romaji}</div>}
-                                                        </div>
-                                                    ))}
-                                                    {!currentCard.on.length && <span className="text-xs text-slate-300">-</span>}
-                                                </div>
+                                                <div className="flex flex-wrap gap-2">{currentCard.on.map((r, i) => (<div key={i}><span className="text-sm font-bold text-slate-700">{r.kana}</span>{showRomaji && <div className="text-[9px] text-rose-400">{r.romaji}</div>}</div>))}</div>
                                             </div>
                                             <div className="bg-slate-50 p-2 rounded-lg">
                                                 <div className="text-[10px] text-slate-400 font-bold mb-1 uppercase">Kunyomi</div>
-                                                <div className="flex flex-wrap gap-2">
-                                                    {currentCard.kun.map((r, i) => (
-                                                        <div key={i}>
-                                                            <span className="text-sm font-bold text-slate-700">{r.kana}</span>
-                                                            {showRomaji && <div className="text-[9px] text-rose-400">{r.romaji}</div>}
-                                                        </div>
-                                                    ))}
-                                                    {!currentCard.kun.length && <span className="text-xs text-slate-300">-</span>}
-                                                </div>
+                                                <div className="flex flex-wrap gap-2">{currentCard.kun.map((r, i) => (<div key={i}><span className="text-sm font-bold text-slate-700">{r.kana}</span>{showRomaji && <div className="text-[9px] text-rose-400">{r.romaji}</div>}</div>))}</div>
                                             </div>
                                         </div>
-
                                         <div className="space-y-3">
                                             {currentCard.examples.map((ex, i) => (
                                                 <div key={i} className="flex items-start justify-between pb-2 border-b border-slate-50 last:border-0">
-                                                    <div className="flex items-center gap-2">
-                                                        <div className="w-0.5 h-8 bg-rose-200"></div>
-                                                        <FuriganaText text={ex.text} furi={ex.furi} romaji={ex.romaji} showRomaji={showRomaji} />
-                                                    </div>
+                                                    <div className="flex items-center gap-2"><div className="w-0.5 h-8 bg-rose-200"></div><FuriganaText text={ex.text} furi={ex.furi} romaji={ex.romaji} showRomaji={showRomaji} /></div>
                                                     <div className="text-xs text-slate-500 text-right w-1/2 pt-1 leading-tight">{ex.mean}</div>
                                                 </div>
                                             ))}
@@ -541,41 +451,21 @@
                         </div>
                     </main>
 
-                    {/* Footer / Instructions */}
-                    <footer className="p-4 text-center text-xs text-slate-400 pb-8">
-                        <div className="flex justify-center gap-8 opacity-60">
-                            <div className="flex flex-col items-center gap-1">
-                                <div className="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center">←</div>
-                                <span>Practice More</span>
-                            </div>
-                            <div className="flex flex-col items-center gap-1">
-                                <div className="w-8 h-8 rounded-full bg-green-100 text-green-500 flex items-center justify-center">→</div>
-                                <span>Studied</span>
-                            </div>
-                        </div>
+                    <footer className="p-4 text-center text-xs text-slate-400 pb-8 flex justify-center gap-8 opacity-60">
+                        <div className="flex flex-col items-center gap-1"><div className="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center">←</div><span>Practice More</span></div>
+                        <div className="flex flex-col items-center gap-1"><div className="w-8 h-8 rounded-full bg-green-100 text-green-500 flex items-center justify-center">→</div><span>Studied</span></div>
                     </footer>
 
-                    {/* Settings Modal */}
                     {showSettings && (
                         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                             <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setShowSettings(false)}></div>
                             <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl relative z-10 p-6">
-                                <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-xl font-bold text-slate-800">Settings</h2>
-                                    <button onClick={() => setShowSettings(false)} className="p-1">✕</button>
-                                </div>
+                                <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-slate-800">Settings</h2><button onClick={() => setShowSettings(false)} className="p-1">✕</button></div>
                                 <div className="bg-slate-50 p-4 rounded-xl flex items-center justify-between mb-4">
-                                    <div>
-                                        <div className="font-bold text-slate-700">Show Romaji</div>
-                                        <div className="text-xs text-slate-500">Pronunciation guide</div>
-                                    </div>
-                                    <button onClick={() => setShowRomaji(!showRomaji)} className="text-rose-500">
-                                        {showRomaji ? <ToggleRight className="w-10 h-10 fill-current" /> : <ToggleLeft className="w-10 h-10 text-slate-300" />}
-                                    </button>
+                                    <div><div className="font-bold text-slate-700">Show Romaji</div><div className="text-xs text-slate-500">Pronunciation guide</div></div>
+                                    <button onClick={() => setShowRomaji(!showRomaji)} className="text-rose-500">{showRomaji ? <ToggleRight className="w-10 h-10 fill-current" /> : <ToggleLeft className="w-10 h-10 text-slate-300" />}</button>
                                 </div>
-                                <div className="text-center">
-                                    <button onClick={() => { setMode('menu'); setShowSettings(false); }} className="text-sm text-red-500 font-bold">End Session & Return to Menu</button>
-                                </div>
+                                <div className="text-center"><button onClick={() => { setMode('menu'); setShowSettings(false); }} className="text-sm text-red-500 font-bold">End Session & Return to Menu</button></div>
                             </div>
                         </div>
                     )}
