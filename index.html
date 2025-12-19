@@ -329,7 +329,15 @@
                 // Update Stats
                 const stats = { ...quizStats };
                 const oldStreak = stats[q.id]?.streak || 0;
-                stats[q.id] = { streak: isCorrect ? oldStreak + 1 : 0 }; // Reset on wrong, +1 on right
+                
+                // GRADUAL ADJUSTMENT:
+                // Correct: +1 streak (lowers weight by 1)
+                // Wrong: -3 streak (increases weight by 3), min 0.
+                const newStreak = isCorrect 
+                    ? oldStreak + 1 
+                    : Math.max(0, oldStreak - 3);
+
+                stats[q.id] = { streak: newStreak };
                 saveQuizStats(stats);
 
                 setTimeout(() => {
