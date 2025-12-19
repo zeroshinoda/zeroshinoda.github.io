@@ -1,6 +1,6 @@
 // --- CONFIGURATION ---
 // IMPORTANT: Increment this number (v1 -> v2) every time you update the app!
-const CACHE_NAME = 'bunny-kanji-v2'; 
+const CACHE_NAME = 'bunny-kanji-v3'; 
 
 const ASSETS = [
   './',
