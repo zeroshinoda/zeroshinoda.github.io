@@ -7,7 +7,6 @@
     
     <!-- PWA / iOS Meta Tags -->
     <link rel="manifest" href="manifest.json">
-    <!-- This line sets the icon for the browser tab -->
     <link rel="icon" type="image/png" href="icon_big.png">
     <link rel="apple-touch-icon" href="icon_big.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
@@ -17,11 +16,7 @@
     <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    
-    <!-- Babel -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
 
     <style>
@@ -44,15 +39,20 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useRef } = React;
+        const { useState, useEffect, useRef, useMemo } = React;
 
         // --- ICONS ---
-        const Settings = (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.38a2 2 0 0 0-.73-2.73l-.15-.1a2 2 0 0 1-1-1.72v-.51a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>);
-        const RotateCcw = (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>);
-        const ToggleLeft = (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="20" height="12" x="2" y="6" rx="6" ry="6"/><circle cx="8" cy="12" r="2"/></svg>);
-        const ToggleRight = (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><rect width="20" height="12" x="2" y="6" rx="6" ry="6"/><circle cx="16" cy="12" r="2"/></svg>);
-        const BookOpen = (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>);
-        const Zap = (props) => (<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...props}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>);
+        const Icons = {
+            Settings: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+            Rotate: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>,
+            Book: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+            Zap: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+            Trash: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>,
+            Brain: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>,
+            Chart: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>,
+            Check: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><polyline points="20 6 9 17 4 12"/></svg>,
+            X: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        };
 
         // --- UTILS ---
         const parseCSV = (csvText) => {
@@ -97,8 +97,8 @@
                 }).filter(e => e.text);
             };
             return {
-                id: Math.random().toString(36).substr(2, 9), 
-                kanji: kanji, level: parseInt(level) || 5, hanviet: hanviet,
+                id: kanji.trim(), // Use Kanji char as ID
+                kanji: kanji.trim(), level: parseInt(level) || 5, hanviet: hanviet,
                 on: parseReadings(onKanaStr, onRomajiStr), kun: parseReadings(kunKanaStr, kunRomajiStr),
                 examples: parseExamples(examplesStr)
             };
@@ -128,8 +128,8 @@
                 { val: 3, label: "N3", desc: "Intermediate" }, { val: 2, label: "N2", desc: "Advanced" }, { val: 1, label: "N1", desc: "Native" },
             ];
             return (
-                <div className="h-screen flex flex-col p-6 bg-slate-50">
-                    <button onClick={() => onSelect(null)} className="text-slate-400 mb-6 font-bold self-start">← Back</button>
+                <div className="h-screen flex flex-col p-6 bg-slate-50 overflow-y-auto">
+                    <button onClick={() => onSelect(null)} className="text-slate-400 mb-6 font-bold self-start flex items-center gap-2"><Icons.Rotate className="w-4 h-4" /> Back</button>
                     <h2 className="text-2xl font-bold mb-2">{title}</h2>
                     <p className="text-sm text-slate-400 mb-6">{description}</p>
                     <div className="grid gap-3">
@@ -138,7 +138,7 @@
                                 className="w-full text-left p-4 bg-white rounded-xl shadow-sm border border-slate-100 flex justify-between items-center hover:border-rose-300 active:scale-95 transition-all">
                                 <div><div className="font-bold text-xl text-slate-800">{l.label}</div><div className="text-xs text-slate-400">{l.desc}</div></div>
                                 <div className="flex items-center gap-3">
-                                    {showCount && <span className="text-xs text-slate-400 font-medium">All Cards</span>}
+                                    {showCount && <span className="text-xs text-slate-400 font-medium">Select</span>}
                                     <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center">→</div>
                                 </div>
                             </button>
@@ -149,197 +149,392 @@
         };
 
         function App() {
+            // Data & Config
             const [kanjiData, setKanjiData] = useState([]);
             const [isLoading, setIsLoading] = useState(true);
             const [error, setError] = useState(null);
+            
+            // Navigation
             const [mode, setMode] = useState('menu'); 
+            
+            // Flashcard State
             const [deck, setDeck] = useState([]);
             const [finishedCount, setFinishedCount] = useState(0);
             const [initialDeckSize, setInitialDeckSize] = useState(0);
             const [isFlipped, setIsFlipped] = useState(false);
-            const [showSettings, setShowSettings] = useState(false);
-            const [showRomaji, setShowRomaji] = useState(true);
             const [dragDelta, setDragDelta] = useState({ x: 0, y: 0 });
             const [isDragging, setIsDragging] = useState(false);
             const [swipeResult, setSwipeResult] = useState(null); 
+            
+            // Quiz State
+            const [quizDeck, setQuizDeck] = useState([]);
+            const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+            const [quizScore, setQuizScore] = useState(0);
+            const [selectedAnswer, setSelectedAnswer] = useState(null); // null, 'correct', 'wrong'
+            
+            // Persistent Data
+            const [showSettings, setShowSettings] = useState(false);
+            const [showRomaji, setShowRomaji] = useState(true);
+            const [hideStudied, setHideStudied] = useState(false);
+            const [studiedIds, setStudiedIds] = useState(new Set()); 
+            const [quizStats, setQuizStats] = useState({}); // { kanjiId: { streak: int } }
+            
             const dragStartRef = useRef(null);
 
+            // --- 1. INITIAL LOAD ---
             useEffect(() => {
-                const loadData = async () => {
+                const load = async () => {
                     try {
-                        const response = await fetch('joyo_kanji_final.csv');
-                        if (!response.ok) throw new Error("Missing joyo_kanji_final.csv");
-                        const text = await response.text();
-                        const parsedData = parseCSV(text);
-                        if (parsedData.length === 0) throw new Error("CSV empty.");
-                        setKanjiData(parsedData); setIsLoading(false);
-                    } catch (err) { setError(err.message); setIsLoading(false); }
+                        const savedStudied = JSON.parse(localStorage.getItem('bk_studied_ids') || '[]');
+                        setStudiedIds(new Set(savedStudied));
+                        setHideStudied(localStorage.getItem('bk_hide_studied') === 'true');
+                        setQuizStats(JSON.parse(localStorage.getItem('bk_quiz_stats') || '{}'));
+
+                        const res = await fetch('joyo_kanji_final.csv');
+                        if (!res.ok) throw new Error("Missing joyo_kanji_final.csv");
+                        const text = await res.text();
+                        const parsed = parseCSV(text);
+                        if (!parsed.length) throw new Error("CSV empty.");
+                        setKanjiData(parsed); setIsLoading(false);
+                    } catch (e) { setError(e.message); setIsLoading(false); }
                 };
-                loadData();
+                load();
             }, []);
 
-            const initSession = (selectedDeck) => {
-                setDeck(selectedDeck); setInitialDeckSize(selectedDeck.length); setFinishedCount(0);
-                setSwipeResult(null); setIsFlipped(false); setDragDelta({ x: 0, y: 0 }); setMode('active');
-            };
-            const startStudyMode = (level) => {
-                if (!level) { setMode('menu'); return; }
-                initSession(shuffleArray(kanjiData.filter(k => k.level >= level)));
-            };
-            const startPracticeMode = (level) => {
-                if (!level) { setMode('menu'); return; }
-                const pool = kanjiData.filter(k => k.level >= level);
-                const count = 10 + ({ 5: 0, 4: 5, 3: 10, 2: 15, 1: 20 }[level] || 0);
-                initSession(shuffleArray(pool).slice(0, count));
+            // --- 2. HELPERS ---
+            const saveQuizStats = (newStats) => {
+                setQuizStats(newStats);
+                localStorage.setItem('bk_quiz_stats', JSON.stringify(newStats));
             };
 
-            const handleSwipeRight = () => { // Studied
+            const markFlashcardStudied = (id) => {
+                const newSet = new Set(studiedIds); newSet.add(id);
+                setStudiedIds(newSet);
+                localStorage.setItem('bk_studied_ids', JSON.stringify([...newSet]));
+            };
+
+            const resetProgress = () => {
+                if(confirm("Reset ALL progress (Flashcards & Quiz Mastery)?")) {
+                    setStudiedIds(new Set()); localStorage.setItem('bk_studied_ids', '[]');
+                    setQuizStats({}); localStorage.setItem('bk_quiz_stats', '{}');
+                    alert("Progress reset.");
+                }
+            };
+
+            // --- 3. MODE STARTERS ---
+            const startFlashcardSession = (deckData) => {
+                let final = deckData;
+                if (hideStudied) final = final.filter(k => !studiedIds.has(k.id));
+                if (!final.length) { alert("All cards in this selection are studied!"); return; }
+                setDeck(final); setInitialDeckSize(final.length); setFinishedCount(0);
+                setSwipeResult(null); setIsFlipped(false); setDragDelta({ x: 0, y: 0 }); setMode('active-flashcard');
+            };
+
+            const startStudy = (lvl) => lvl && startFlashcardSession(shuffleArray(kanjiData.filter(k => k.level >= lvl)));
+            const startPractice = (lvl) => {
+                if (!lvl) return;
+                const pool = kanjiData.filter(k => k.level >= lvl);
+                const count = 10 + ({5:0,4:5,3:10,2:15,1:20}[lvl] || 0);
+                startFlashcardSession(shuffleArray(pool).slice(0, count));
+            };
+
+            const startQuiz = (lvl) => {
+                if (!lvl) { setMode('menu'); return; }
+                const pool = kanjiData.filter(k => k.level >= lvl);
+                
+                // Weighted Selection Logic
+                // Weight = 20 - streak. Min 0.
+                // If streak >= 20, weight is 0 (Mastered, 0% chance)
+                const candidates = pool.map(k => {
+                    const streak = (quizStats[k.id]?.streak || 0);
+                    const weight = Math.max(0, 20 - streak);
+                    return { ...k, weight };
+                }).filter(c => c.weight > 0);
+
+                if (candidates.length === 0) {
+                    alert("You have mastered (streak 20+) all Kanji in this level! Great job!");
+                    setMode('menu');
+                    return;
+                }
+
+                // Pick 20 weighted items
+                const selected = [];
+                const tempPool = [...candidates];
+                for (let i = 0; i < 20 && tempPool.length > 0; i++) {
+                    const totalWeight = tempPool.reduce((sum, c) => sum + c.weight, 0);
+                    let r = Math.random() * totalWeight;
+                    let idx = 0;
+                    for (let j = 0; j < tempPool.length; j++) {
+                        r -= tempPool[j].weight;
+                        if (r <= 0) { idx = j; break; }
+                    }
+                    selected.push(tempPool[idx]);
+                    tempPool.splice(idx, 1);
+                }
+
+                // Prepare Questions with Distractors
+                const quizQuestions = selected.map(q => {
+                    const others = kanjiData.filter(k => k.id !== q.id);
+                    const distractors = shuffleArray(others).slice(0, 3);
+                    const options = shuffleArray([q, ...distractors]);
+                    return { question: q, options };
+                });
+
+                setQuizDeck(quizQuestions);
+                setCurrentQuizIndex(0);
+                setQuizScore(0);
+                setMode('active-quiz');
+            };
+
+            // --- 4. FLASHCARD LOGIC ---
+            const onSwipeRight = () => { // Studied
                 setSwipeResult('right');
+                markFlashcardStudied(deck[0].id);
                 setTimeout(() => {
-                    setDeck(prev => prev.slice(1)); setFinishedCount(c => c + 1); setSwipeResult(null); setDragDelta({ x: 0, y: 0 }); setIsFlipped(false);
+                    setDeck(d => d.slice(1)); setFinishedCount(c => c + 1); setSwipeResult(null); setDragDelta({x:0,y:0}); setIsFlipped(false);
                 }, 300);
             };
-            const handleSwipeLeft = () => { // Practice More
+            const onSwipeLeft = () => { // Practice
                 setSwipeResult('left');
-                const currentCard = deck[0];
+                const card = deck[0];
                 setTimeout(() => {
-                    setDeck(prev => {
-                        const remaining = prev.slice(1);
-                        if (remaining.length === 0) return [currentCard]; 
-                        const insertIdx = Math.floor(Math.random() * remaining.length) + 1;
-                        const newDeck = [...remaining]; newDeck.splice(insertIdx, 0, currentCard); return newDeck;
+                    setDeck(d => {
+                        const rem = d.slice(1);
+                        if (!rem.length) return [card];
+                        const idx = Math.floor(Math.random() * rem.length) + 1;
+                        const n = [...rem]; n.splice(idx, 0, card); return n;
                     });
-                    setSwipeResult(null); setDragDelta({ x: 0, y: 0 }); setIsFlipped(false);
+                    setSwipeResult(null); setDragDelta({x:0,y:0}); setIsFlipped(false);
                 }, 300);
             };
+            // Drag Handlers
+            const onPD = (e) => { if (swipeResult) return; setIsDragging(true); dragStartRef.current = { x: e.clientX || e.touches[0].clientX }; };
+            const onPM = (e) => { if (!isDragging) return; setDragDelta({ x: (e.clientX || e.touches[0].clientX) - dragStartRef.current.x, y: 0 }); };
+            const onPU = () => { setIsDragging(false); if (dragDelta.x > 100) onSwipeRight(); else if (dragDelta.x < -100) onSwipeLeft(); else setDragDelta({x:0,y:0}); };
+            const onClickCard = () => { if (Math.abs(dragDelta.x) < 10) setIsFlipped(!isFlipped); };
 
-            const handlePointerDown = (e) => {
-                if (swipeResult) return;
-                setIsDragging(true);
-                dragStartRef.current = { x: e.clientX || e.touches[0].clientX, y: e.clientY || e.touches[0].clientY };
-            };
-            const handlePointerMove = (e) => {
-                if (!isDragging || !dragStartRef.current) return;
-                const clientX = e.clientX || (e.touches ? e.touches[0].clientX : 0);
-                setDragDelta({ x: clientX - dragStartRef.current.x, y: 0 });
-            };
-            const handlePointerUp = () => {
-                if (!isDragging) return;
-                setIsDragging(false);
-                if (dragDelta.x > 100) handleSwipeRight();
-                else if (dragDelta.x < -100) handleSwipeLeft();
-                else setDragDelta({ x: 0, y: 0 });
-            };
-            const handleClick = () => { if (Math.abs(dragDelta.x) < 10) setIsFlipped(!isFlipped); };
+            // --- 5. QUIZ LOGIC ---
+            const handleAnswer = (option) => {
+                if (selectedAnswer) return; // Prevent double click
+                const q = quizDeck[currentQuizIndex].question;
+                const isCorrect = option.id === q.id;
+                
+                setSelectedAnswer(isCorrect ? 'correct' : 'wrong');
+                if (isCorrect) setQuizScore(s => s + 1);
 
-            if (isLoading) return <div className="h-screen flex items-center justify-center text-slate-500">Loading Kanji...</div>;
+                // Update Stats
+                const stats = { ...quizStats };
+                const oldStreak = stats[q.id]?.streak || 0;
+                stats[q.id] = { streak: isCorrect ? oldStreak + 1 : 0 }; // Reset on wrong, +1 on right
+                saveQuizStats(stats);
+
+                setTimeout(() => {
+                    setSelectedAnswer(null);
+                    if (currentQuizIndex < quizDeck.length - 1) {
+                        setCurrentQuizIndex(i => i + 1);
+                    } else {
+                        setMode('quiz-result');
+                    }
+                }, 1000);
+            };
+
+            // --- RENDER ---
+            if (isLoading) return <div className="h-screen flex items-center justify-center text-slate-500">Loading...</div>;
             if (error) return <div className="p-10 text-center text-red-500">{error}</div>;
 
+            // MENU
             if (mode === 'menu') {
                 return (
-                    <div className="h-screen flex flex-col items-center justify-center p-6 bg-slate-50">
-                        <div className="mb-10 text-center"><h1 className="text-4xl font-bold text-slate-800 mb-2">Bunny<span className="text-rose-500">Kanji</span></h1><p className="text-slate-400">Master Japanese Characters</p></div>
-                        <div className="w-full max-w-sm space-y-4">
-                            <button onClick={() => setMode('setup-study')} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-bold shadow-lg shadow-slate-200 flex items-center justify-center gap-3 active:scale-95 transition-transform"><BookOpen className="w-6 h-6" /><span>Study Mode</span></button>
-                            <button onClick={() => setMode('setup-practice')} className="w-full py-4 bg-white text-rose-500 border-2 border-rose-100 rounded-2xl font-bold shadow-sm flex items-center justify-center gap-3 active:scale-95 transition-transform hover:bg-rose-50"><Zap className="w-6 h-6" /><span>Quick Practice</span></button>
+                    <div className="h-screen flex flex-col items-center justify-center p-6 bg-slate-50 relative">
+                        <button onClick={() => setShowSettings(true)} className="absolute top-6 right-6 text-slate-400"><Icons.Settings className="w-6 h-6" /></button>
+                        <div className="mb-8 text-center"><h1 className="text-4xl font-bold text-slate-800 mb-2">Bunny<span className="text-rose-500">Kanji</span></h1><p className="text-slate-400">Master Japanese Characters</p></div>
+                        <div className="w-full max-w-sm space-y-3">
+                            <button onClick={() => setMode('setup-study')} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-transform"><Icons.Book className="w-6 h-6" /> Study Mode</button>
+                            <button onClick={() => setMode('setup-practice')} className="w-full py-4 bg-white text-rose-500 border-2 border-rose-100 rounded-2xl font-bold shadow-sm flex items-center justify-center gap-3 active:scale-95 transition-transform"><Icons.Zap className="w-6 h-6" /> Quick Practice</button>
+                            <button onClick={() => setMode('setup-quiz')} className="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold shadow-lg shadow-rose-200 flex items-center justify-center gap-3 active:scale-95 transition-transform"><Icons.Brain className="w-6 h-6" /> Quiz Challenge</button>
+                            <button onClick={() => setMode('progression')} className="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold flex items-center justify-center gap-3 active:scale-95 transition-transform"><Icons.Chart className="w-6 h-6" /> Progression</button>
                         </div>
+                        {showSettings && <SettingsModal onClose={()=>setShowSettings(false)} />}
                     </div>
                 );
             }
-            if (mode === 'setup-study') return <LevelSelector onSelect={startStudyMode} title="Select Study Level" description="Study all kanji from this level and below." showCount={true} />;
-            if (mode === 'setup-practice') return <LevelSelector onSelect={startPracticeMode} title="Select Practice Level" description="A quick random session with a mix of cards." showCount={false} />;
 
-            const currentCard = deck[0];
-            if (!currentCard && mode === 'active') {
+            // SETUP
+            if (mode === 'setup-study') return <LevelSelector onSelect={startStudy} title="Study Mode" description="Swipe cards. Left to repeat, Right to mark as studied." showCount={true} />;
+            if (mode === 'setup-practice') return <LevelSelector onSelect={startPractice} title="Quick Practice" description="Random 10+ cards from selected level." showCount={false} />;
+            if (mode === 'setup-quiz') return <LevelSelector onSelect={startQuiz} title="Quiz Challenge" description="20 weighted questions. Master cards to remove them." showCount={false} />;
+
+            // PROGRESSION
+            if (mode === 'progression') {
+                const levels = [5,4,3,2,1];
                 return (
-                    <div className="h-screen flex flex-col items-center justify-center p-6 text-center">
-                        <div className="text-6xl mb-4">🎉</div><h2 className="text-2xl font-bold text-slate-800 mb-2">Session Complete!</h2><p className="text-slate-500 mb-8">You studied {finishedCount} cards.</p>
-                        <button onClick={() => setMode('menu')} className="px-8 py-3 bg-rose-500 text-white rounded-full font-bold shadow-lg shadow-rose-200">Back to Menu</button>
+                    <div className="h-screen flex flex-col bg-slate-50 p-6 overflow-y-auto">
+                        <button onClick={() => setMode('menu')} className="mb-6 font-bold text-slate-400 flex gap-2"><Icons.Rotate className="w-4 h-4"/> Back</button>
+                        <h2 className="text-2xl font-bold mb-6">Mastery Progress</h2>
+                        <div className="space-y-6">
+                            {levels.map(lvl => {
+                                const total = kanjiData.filter(k => k.level === lvl).length;
+                                const learned = kanjiData.filter(k => k.level === lvl && (quizStats[k.id]?.streak || 0) >= 20).length;
+                                const pct = total ? Math.round((learned/total)*100) : 0;
+                                return (
+                                    <div key={lvl} className="bg-white p-4 rounded-xl shadow-sm">
+                                        <div className="flex justify-between mb-2">
+                                            <span className="font-bold text-slate-700">N{lvl}</span>
+                                            <span className="text-xs text-slate-500">{learned}/{total} Mastered</span>
+                                        </div>
+                                        <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                                            <div className="h-full bg-rose-500 transition-all duration-1000" style={{width: `${pct}%`}}></div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                        <div className="mt-8 text-xs text-center text-slate-400">
+                            "Mastered" = 20 consecutive correct answers in Quiz mode.
+                        </div>
                     </div>
                 );
             }
 
-            const progress = initialDeckSize > 0 ? (finishedCount / initialDeckSize) * 100 : 0;
-            const rotateDeg = dragDelta.x * 0.1;
-            const cardStyle = { transform: `translateX(${dragDelta.x}px) rotate(${rotateDeg}deg)`, transition: isDragging ? 'none' : 'transform 0.3s ease-out', cursor: isDragging ? 'grabbing' : 'grab' };
-            let animClass = ''; if (swipeResult === 'left') animClass = 'animate-swipe-left'; if (swipeResult === 'right') animClass = 'animate-swipe-right';
-
-            return (
-                <div className="h-screen flex flex-col overflow-hidden bg-slate-50 relative selection:bg-rose-200">
-                    <header className="px-6 py-4 flex justify-between items-center z-10">
-                        <div className="flex items-center gap-2">
-                            <button onClick={() => setMode('menu')} className="text-slate-400 hover:text-slate-600"><RotateCcw className="w-5 h-5" /></button>
-                            <span className="text-sm font-bold text-slate-400">{finishedCount + 1} / {initialDeckSize}</span>
+            // ACTIVE QUIZ
+            if (mode === 'active-quiz') {
+                const q = quizDeck[currentQuizIndex];
+                return (
+                    <div className="h-screen flex flex-col bg-slate-50">
+                        <header className="p-4 flex justify-between items-center bg-white shadow-sm">
+                            <span className="font-bold text-rose-500">Quiz</span>
+                            <span className="text-sm font-bold text-slate-400">{currentQuizIndex + 1} / {quizDeck.length}</span>
+                        </header>
+                        <div className="flex-1 flex flex-col items-center justify-center p-6">
+                            <div className="text-9xl font-serif text-slate-800 mb-8 animate-in zoom-in duration-300">{q.question.kanji}</div>
+                            <div className="grid grid-cols-2 gap-3 w-full max-w-md">
+                                {q.options.map((opt, i) => {
+                                    const isCorrect = opt.id === q.question.id;
+                                    let btnClass = "bg-white border-2 border-slate-100 text-slate-600";
+                                    if (selectedAnswer) {
+                                        if (isCorrect) btnClass = "bg-green-500 border-green-500 text-white";
+                                        else if (selectedAnswer === 'wrong' && !isCorrect) btnClass = "opacity-50"; 
+                                    }
+                                    return (
+                                        <button key={i} onClick={() => handleAnswer(opt)} disabled={!!selectedAnswer}
+                                            className={`p-4 rounded-xl shadow-sm text-left transition-all active:scale-95 flex flex-col gap-1 ${btnClass}`}>
+                                            <div className="font-bold text-lg">{opt.hanviet}</div>
+                                            <div className="text-xs opacity-80 truncate">{opt.on.map(o=>o.kana).join(', ')}</div>
+                                            <div className="text-xs opacity-80 truncate">{opt.kun.map(k=>k.kana).join(', ')}</div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
-                        <button onClick={() => setShowSettings(true)} className="text-slate-400 hover:text-slate-600"><Settings className="w-6 h-6" /></button>
-                    </header>
-                    <div className="w-full h-1 bg-slate-200"><div className="h-full bg-rose-500 transition-all duration-500" style={{ width: `${progress}%` }}></div></div>
+                    </div>
+                );
+            }
 
-                    <main className="flex-1 flex flex-col items-center justify-center p-4 relative w-full max-w-md mx-auto perspective-1000">
-                        <div className={`relative w-full aspect-[3/4] ${animClass}`} style={cardStyle}
-                             onMouseDown={handlePointerDown} onMouseMove={handlePointerMove} onMouseUp={handlePointerUp} onMouseLeave={handlePointerUp} onTouchStart={handlePointerDown} onTouchMove={handlePointerMove} onTouchEnd={handlePointerUp}>
-                            <div className="absolute top-8 left-8 border-4 border-green-500 text-green-500 font-bold text-3xl px-4 py-2 rounded-xl transform -rotate-12 z-50 pointer-events-none" style={{ opacity: Math.max(dragDelta.x/100, 0) }}>STUDIED</div>
-                            <div className="absolute top-8 right-8 border-4 border-rose-500 text-rose-500 font-bold text-3xl px-4 py-2 rounded-xl transform rotate-12 z-50 pointer-events-none" style={{ opacity: Math.max(-dragDelta.x/100, 0) }}>PRACTICE</div>
+            if (mode === 'quiz-result') {
+                return (
+                    <div className="h-screen flex flex-col items-center justify-center p-6 text-center bg-slate-50">
+                        <div className="text-6xl mb-4">{quizScore >= 15 ? '🎉' : '💪'}</div>
+                        <h2 className="text-3xl font-bold text-slate-800 mb-2">Quiz Complete!</h2>
+                        <div className="text-xl text-slate-500 mb-8">Score: <span className="text-rose-500 font-bold">{quizScore}</span> / {quizDeck.length}</div>
+                        <button onClick={() => setMode('menu')} className="px-8 py-3 bg-slate-800 text-white rounded-full font-bold shadow-lg">Back to Menu</button>
+                    </div>
+                );
+            }
 
-                            <div className={`w-full h-full relative transition-transform duration-500 transform-style-3d shadow-2xl rounded-3xl bg-white`} style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }} onClick={handleClick}>
-                                <div className="absolute inset-0 backface-hidden rounded-3xl flex flex-col items-center justify-center border border-slate-100 bg-white overflow-hidden z-20">
-                                    <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-rose-50 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
-                                    <div className="relative z-10 flex flex-col items-center pointer-events-none no-select">
-                                        <div className="text-xs font-bold text-rose-200 mb-4">N{currentCard.level}</div><span className="text-9xl font-light text-slate-800 mb-8 font-serif">{currentCard.kanji}</span><span className="text-xs text-slate-300 font-medium uppercase tracking-widest">Tap to flip</span>
+            // ACTIVE FLASHCARD
+            if (mode === 'active-flashcard') {
+                if (!deck[0]) return (
+                    <div className="h-screen flex flex-col items-center justify-center p-6 text-center">
+                        <div className="text-6xl mb-4">🎉</div><h2 className="text-2xl font-bold mb-2">Done!</h2>
+                        <button onClick={() => setMode('menu')} className="px-8 py-3 bg-rose-500 text-white rounded-full font-bold">Menu</button>
+                    </div>
+                );
+
+                const currentCard = deck[0];
+                const rotateDeg = dragDelta.x * 0.1;
+                const cardStyle = { transform: `translateX(${dragDelta.x}px) rotate(${rotateDeg}deg)`, transition: isDragging ? 'none' : 'transform 0.3s ease-out', cursor: isDragging ? 'grabbing' : 'grab' };
+                let animClass = ''; if (swipeResult === 'left') animClass = 'animate-swipe-left'; if (swipeResult === 'right') animClass = 'animate-swipe-right';
+                
+                return (
+                    <div className="h-screen flex flex-col overflow-hidden bg-slate-50 relative selection:bg-rose-200">
+                        <header className="px-6 py-4 flex justify-between items-center z-10">
+                            <div className="flex items-center gap-2">
+                                <button onClick={() => setMode('menu')} className="text-slate-400"><Icons.Rotate className="w-5 h-5" /></button>
+                                <span className="text-sm font-bold text-slate-400">{finishedCount + 1} / {initialDeckSize}</span>
+                            </div>
+                            <button onClick={() => setShowSettings(true)} className="text-slate-400"><Icons.Settings className="w-6 h-6" /></button>
+                        </header>
+                        <div className="w-full h-1 bg-slate-200"><div className="h-full bg-rose-500 transition-all duration-500" style={{ width: `${(finishedCount/initialDeckSize)*100}%` }}></div></div>
+
+                        <main className="flex-1 flex flex-col items-center justify-center p-4 relative w-full max-w-md mx-auto perspective-1000">
+                            <div className={`relative w-full aspect-[3/4] ${animClass}`} style={cardStyle}
+                                onMouseDown={onPD} onMouseMove={onPM} onMouseUp={onPU} onMouseLeave={onPU} onTouchStart={onPD} onTouchMove={onPM} onTouchEnd={onPU}>
+                                <div className="absolute top-8 left-8 border-4 border-green-500 text-green-500 font-bold text-3xl px-4 py-2 rounded-xl transform -rotate-12 z-50 pointer-events-none" style={{ opacity: Math.max(dragDelta.x/100, 0) }}>STUDIED</div>
+                                <div className="absolute top-8 right-8 border-4 border-rose-500 text-rose-500 font-bold text-3xl px-4 py-2 rounded-xl transform rotate-12 z-50 pointer-events-none" style={{ opacity: Math.max(-dragDelta.x/100, 0) }}>PRACTICE</div>
+
+                                <div className={`w-full h-full relative transition-transform duration-500 transform-style-3d shadow-2xl rounded-3xl bg-white`} style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }} onClick={onClickCard}>
+                                    <div className="absolute inset-0 backface-hidden rounded-3xl flex flex-col items-center justify-center border border-slate-100 bg-white overflow-hidden z-20">
+                                        <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-rose-50 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
+                                        <div className="relative z-10 flex flex-col items-center pointer-events-none no-select">
+                                            <div className="text-xs font-bold text-rose-200 mb-4">N{currentCard.level}</div><span className="text-9xl font-light text-slate-800 mb-8 font-serif">{currentCard.kanji}</span><span className="text-xs text-slate-300 font-medium uppercase tracking-widest">Tap to flip</span>
+                                        </div>
                                     </div>
-                                </div>
-                                <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl flex flex-col p-6 border border-slate-100 bg-white overflow-hidden z-20">
-                                    <div className="card-content h-full overflow-y-auto pr-1">
-                                        <div className="flex items-start justify-between border-b border-slate-100 pb-4 mb-4">
-                                            <div className="text-5xl font-serif text-slate-800">{currentCard.kanji}</div><div className="text-right"><div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Hán Việt</div><div className="text-xl font-bold text-rose-600">{currentCard.hanviet}</div></div>
-                                        </div>
-                                        <div className="grid grid-cols-2 gap-3 mb-4">
-                                            <div className="bg-slate-50 p-2 rounded-lg"><div className="text-[10px] text-slate-400 font-bold mb-1 uppercase">Onyomi</div><div className="flex flex-wrap gap-2">{currentCard.on.map((r, i) => (<div key={i}><span className="text-sm font-bold text-slate-700">{r.kana}</span>{showRomaji && <div className="text-[9px] text-rose-400">{r.romaji}</div>}</div>))}</div></div>
-                                            <div className="bg-slate-50 p-2 rounded-lg"><div className="text-[10px] text-slate-400 font-bold mb-1 uppercase">Kunyomi</div><div className="flex flex-wrap gap-2">{currentCard.kun.map((r, i) => (<div key={i}><span className="text-sm font-bold text-slate-700">{r.kana}</span>{showRomaji && <div className="text-[9px] text-rose-400">{r.romaji}</div>}</div>))}</div></div>
-                                        </div>
-                                        <div className="space-y-3">
-                                            {currentCard.examples.map((ex, i) => (
-                                                <div key={i} className="flex items-start justify-between pb-2 border-b border-slate-50 last:border-0"><div className="flex items-center gap-2"><div className="w-0.5 h-8 bg-rose-200"></div><FuriganaText text={ex.text} furi={ex.furi} romaji={ex.romaji} showRomaji={showRomaji} /></div><div className="text-xs text-slate-500 text-right w-1/2 pt-1 leading-tight">{ex.mean}</div></div>
-                                            ))}
+                                    <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl flex flex-col p-6 border border-slate-100 bg-white overflow-hidden z-20">
+                                        <div className="card-content h-full overflow-y-auto pr-1">
+                                            <div className="flex items-start justify-between border-b border-slate-100 pb-4 mb-4">
+                                                <div className="text-5xl font-serif text-slate-800">{currentCard.kanji}</div><div className="text-right"><div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Hán Việt</div><div className="text-xl font-bold text-rose-600">{currentCard.hanviet}</div></div>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-3 mb-4">
+                                                <div className="bg-slate-50 p-2 rounded-lg"><div className="text-[10px] text-slate-400 font-bold mb-1 uppercase">Onyomi</div><div className="flex flex-wrap gap-2">{currentCard.on.map((r, i) => (<div key={i}><span className="text-sm font-bold text-slate-700">{r.kana}</span>{showRomaji && <div className="text-[9px] text-rose-400">{r.romaji}</div>}</div>))}</div></div>
+                                                <div className="bg-slate-50 p-2 rounded-lg"><div className="text-[10px] text-slate-400 font-bold mb-1 uppercase">Kunyomi</div><div className="flex flex-wrap gap-2">{currentCard.kun.map((r, i) => (<div key={i}><span className="text-sm font-bold text-slate-700">{r.kana}</span>{showRomaji && <div className="text-[9px] text-rose-400">{r.romaji}</div>}</div>))}</div></div>
+                                            </div>
+                                            <div className="space-y-3">
+                                                {currentCard.examples.map((ex, i) => (
+                                                    <div key={i} className="flex items-start justify-between pb-2 border-b border-slate-50 last:border-0"><div className="flex items-center gap-2"><div className="w-0.5 h-8 bg-rose-200"></div><FuriganaText text={ex.text} furi={ex.furi} romaji={ex.romaji} showRomaji={showRomaji} /></div><div className="text-xs text-slate-500 text-right w-1/2 pt-1 leading-tight">{ex.mean}</div></div>
+                                                ))}
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                    </main>
+                        </main>
+                        <footer className="p-4 text-center text-xs text-slate-400 pb-8 flex justify-center gap-8 opacity-60">
+                            <div className="flex flex-col items-center gap-1"><div className="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center">←</div><span>Practice More</span></div>
+                            <div className="flex flex-col items-center gap-1"><div className="w-8 h-8 rounded-full bg-green-100 text-green-500 flex items-center justify-center">→</div><span>Studied</span></div>
+                        </footer>
+                        {showSettings && <SettingsModal onClose={()=>setShowSettings(false)} />}
+                    </div>
+                );
+            }
 
-                    <footer className="p-4 text-center text-xs text-slate-400 pb-8 flex justify-center gap-8 opacity-60">
-                        <div className="flex flex-col items-center gap-1"><div className="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center">←</div><span>Practice More</span></div>
-                        <div className="flex flex-col items-center gap-1"><div className="w-8 h-8 rounded-full bg-green-100 text-green-500 flex items-center justify-center">→</div><span>Studied</span></div>
-                    </footer>
-
-                    {showSettings && (
-                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-                            <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={() => setShowSettings(false)}></div>
-                            <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl relative z-10 p-6">
-                                <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-slate-800">Settings</h2><button onClick={() => setShowSettings(false)} className="p-1">✕</button></div>
-                                <div className="bg-slate-50 p-4 rounded-xl flex items-center justify-between mb-4">
+            // MODAL
+            function SettingsModal({onClose}) {
+                return (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose}></div>
+                        <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl relative z-10 p-6">
+                            <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-slate-800">Settings</h2><button onClick={onClose} className="p-1"><Icons.X className="w-6 h-6"/></button></div>
+                            <div className="space-y-4">
+                                <div className="bg-slate-50 p-4 rounded-xl flex items-center justify-between">
                                     <div><div className="font-bold text-slate-700">Show Romaji</div><div className="text-xs text-slate-500">Pronunciation guide</div></div>
-                                    <button onClick={() => setShowRomaji(!showRomaji)} className="text-rose-500">{showRomaji ? <ToggleRight className="w-10 h-10 fill-current" /> : <ToggleLeft className="w-10 h-10 text-slate-300" />}</button>
+                                    <button onClick={() => setShowRomaji(!showRomaji)} className="text-rose-500">{showRomaji ? <Icons.Check className="w-8 h-8" /> : <Icons.X className="w-8 h-8 text-slate-300" />}</button>
                                 </div>
-                                <div className="text-center"><button onClick={() => { setMode('menu'); setShowSettings(false); }} className="text-sm text-red-500 font-bold">End Session & Return to Menu</button></div>
+                                <div className="bg-slate-50 p-4 rounded-xl flex items-center justify-between">
+                                    <div><div className="font-bold text-slate-700">Hide Studied</div><div className="text-xs text-slate-500">In Flashcard Mode</div></div>
+                                    <button onClick={()=>{const n=!hideStudied;setHideStudied(n);localStorage.setItem('bk_hide_studied',n)}} className="text-rose-500">{hideStudied ? <Icons.Check className="w-8 h-8" /> : <Icons.X className="w-8 h-8 text-slate-300" />}</button>
+                                </div>
+                                <button onClick={resetProgress} className="w-full p-4 rounded-xl border border-red-100 text-red-500 flex items-center justify-center gap-2 hover:bg-red-50"><Icons.Trash className="w-4 h-4" /> Reset All Progress</button>
                             </div>
                         </div>
-                    )}
-                </div>
-            );
+                    </div>
+                );
+            }
         }
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
-    
-    <!-- Register Service Worker -->
     <script>
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js')
-                .then(() => console.log('Service Worker Registered'))
-                .catch((err) => console.log('SW Failed:', err));
-        }
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(console.log);
     </script>
 </body>
 </html>
