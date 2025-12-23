@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Bunny Kanji</title>
     
-    <!-- PWA / iOS Meta Tags -->
     <link rel="manifest" href="manifest.json">
     <link rel="icon" type="image/png" href="icon_big.png">
     <link rel="apple-touch-icon" href="icon_big.png">
@@ -13,7 +12,6 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#f43f5e">
 
-    <!-- React & ReactDOM -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
@@ -343,6 +341,7 @@
             const [isLoading, setIsLoading] = useState(true);
             const [error, setError] = useState(null);
             const [mode, setMode] = useState('menu'); 
+            const [viewLevel, setViewLevel] = useState(null);
             
             // Flashcard
             const [deck, setDeck] = useState([]);
@@ -588,7 +587,7 @@
                                     const learned = kanjiData.filter(k => k.level === lvl && (quizStats[k.id]?.streak || 0) >= 20).length;
                                     const pct = total ? Math.round((learned/total)*100) : 0;
                                     return (
-                                        <div key={lvl} className="bg-white p-4 rounded-xl shadow-sm">
+                                        <div key={lvl} onClick={() => {playClick(); setViewLevel(lvl); setMode('progression-detail');}} className="bg-white p-4 rounded-xl shadow-sm cursor-pointer hover:border-rose-300 border border-transparent transition-all hover:scale-[1.02] active:scale-95">
                                             <div className="flex justify-between mb-2">
                                                 <span className="font-bold text-slate-700">N{lvl}</span>
                                                 <span className="text-xs text-slate-500">{learned}/{total} Mastered</span>
@@ -600,7 +599,33 @@
                                     );
                                 })}
                             </div>
-                            <div className="mt-8 text-xs text-center text-slate-400">"Mastered" = 20 consecutive correct answers in Quiz mode.</div>
+                            <div className="mt-8 text-xs text-center text-slate-400">"Mastered" = 20 consecutive correct answers in Quiz mode. Tap a level to see details.</div>
+                        </div>
+                    )}
+
+                    {/* PROGRESSION DETAIL GRID */}
+                    {mode === 'progression-detail' && (
+                        <div className="h-screen flex flex-col bg-slate-50 p-6 overflow-hidden">
+                            <button onClick={() => {playClick(); setMode('progression'); setViewLevel(null);}} className="mb-4 font-bold text-slate-400 flex gap-2"><Icons.ArrowLeft className="w-5 h-5"/> Back</button>
+                            <h2 className="text-2xl font-bold mb-4">N{viewLevel} Kanji Mastery</h2>
+                            <div className="flex-1 overflow-y-auto pr-2 pb-6">
+                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                                    {kanjiData.filter(k => k.level === viewLevel).map(k => {
+                                        const streak = quizStats[k.id]?.streak || 0;
+                                        const cappedStreak = Math.min(streak, 20);
+                                        const pct = (cappedStreak / 20) * 100;
+                                        return (
+                                            <div key={k.id} className="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
+                                                <div className="text-3xl font-serif text-slate-800 mb-2">{k.kanji}</div>
+                                                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-1">
+                                                    <div className="h-full bg-rose-500 transition-all" style={{width: `${pct}%`}}></div>
+                                                </div>
+                                                <div className="text-[10px] text-slate-400 font-bold">{cappedStreak}/20 streaks</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
                         </div>
                     )}
 
