@@ -662,8 +662,8 @@
                                             <button key={i} onClick={() => {playClick(); handleAnswer(opt);}} disabled={!!selectedAnswer}
                                                 className={`p-4 rounded-xl shadow-sm text-left transition-all flex flex-col gap-1 ${btnClass}`}>
                                                 <div className="font-bold text-lg">{opt.hanviet}</div>
-                                                <div className="text-xs opacity-80 truncate">{opt.on.map(o=>o.kana).join(', ')}</div>
-                                                <div className="text-xs opacity-80 truncate">{opt.kun.map(k=>k.kana).join(', ')}</div>
+                                                <div className="text-xs opacity-80 whitespace-normal">{opt.on.map(o=>o.kana).join(', ')}</div>
+                                                <div className="text-xs opacity-80 whitespace-normal">{opt.kun.map(k=>k.kana).join(', ')}</div>
                                             </button>
                                         );
                                     })}
