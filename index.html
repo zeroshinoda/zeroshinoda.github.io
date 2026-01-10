@@ -56,16 +56,24 @@
     <!-- Header -->
     <header class="bg-white/90 backdrop-blur-sm border-b-4 border-pink-200 sticky top-0 z-20">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-            <div class="flex items-center gap-3 group cursor-pointer select-none">
+            <div class="flex items-center gap-3 group cursor-pointer select-none" onclick="AudioEngine.click()">
                 <div class="bg-pink-100 p-2 rounded-2xl border-2 border-pink-300 animate-float shadow-sm">
                     <i data-lucide="package-open" class="text-pink-500 w-8 h-8"></i>
                 </div>
                 <h1 class="text-3xl font-bold text-pink-500 tracking-wide drop-shadow-sm group-hover:scale-105 transition-transform">Bunny's Toys Box</h1>
             </div>
-            <a href="https://github.com" target="_blank" class="bg-white border-2 border-slate-200 text-slate-500 hover:text-pink-500 hover:border-pink-300 px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 shadow-sm hover:-translate-y-1">
-                <i data-lucide="github" class="w-5 h-5"></i>
-                <span class="hidden sm:inline">Source Code</span>
-            </a>
+            
+            <div class="flex items-center gap-3">
+                <!-- Sound Toggle -->
+                <button id="sound-toggle" class="bg-white border-2 border-slate-200 text-slate-500 hover:text-purple-500 hover:border-purple-300 p-2 rounded-xl transition-all shadow-sm hover:-translate-y-1" onclick="toggleSound()" title="Toggle Retro Sound">
+                    <i data-lucide="volume-2" class="w-5 h-5"></i>
+                </button>
+
+                <a href="https://github.com" target="_blank" class="bg-white border-2 border-slate-200 text-slate-500 hover:text-pink-500 hover:border-pink-300 px-4 py-2 rounded-xl font-bold transition-all flex items-center gap-2 shadow-sm hover:-translate-y-1">
+                    <i data-lucide="github" class="w-5 h-5"></i>
+                    <span class="hidden sm:inline">Source Code</span>
+                </a>
+            </div>
         </div>
     </header>
 
@@ -111,6 +119,122 @@
     </footer>
 
     <script>
+        // --- RETRO AUDIO ENGINE ---
+        // Generates 8-bit style sounds using Web Audio API
+        const AudioEngine = {
+            ctx: null,
+            isMuted: false,
+            
+            init: function() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+
+            // Synthesize a retro square wave tone
+            playTone: function(freqStart, freqEnd, duration, type = 'square', vol = 0.05) {
+                if (this.isMuted || !this.ctx) return;
+                
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                
+                osc.type = type; // square = 8-bit feel
+                
+                osc.frequency.setValueAtTime(freqStart, this.ctx.currentTime);
+                if (freqEnd) {
+                    // Slide the pitch (e.g. for jumps or coins)
+                    osc.frequency.exponentialRampToValueAtTime(freqEnd, this.ctx.currentTime + duration);
+                }
+                
+                // Envelope (Fade out)
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + duration);
+                
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+
+            hover: function() {
+                // Short high blip
+                if (!this.ctx) this.init();
+                this.playTone(880, null, 0.05, 'square', 0.02);
+            },
+
+            click: function() {
+                // "Coin" style pickup sound (Low to High jump)
+                if (!this.ctx) this.init();
+                this.playTone(440, 880, 0.1, 'square', 0.05);
+                setTimeout(() => {
+                     if(!this.isMuted) this.playTone(880, 1760, 0.1, 'square', 0.05);
+                }, 80);
+            },
+
+            toggle: function() {
+                this.isMuted = !this.isMuted;
+                return this.isMuted;
+            }
+        };
+
+        // UI function for the toggle button
+        function toggleSound() {
+            AudioEngine.init(); // Ensure context is ready
+            const isMuted = AudioEngine.toggle();
+            const btn = document.getElementById('sound-toggle');
+            const icon = btn.querySelector('i'); // Lucide icon wrapper
+            
+            if (isMuted) {
+                // Change to mute icon
+                btn.classList.add('text-red-400', 'border-red-200');
+                btn.classList.remove('text-slate-500', 'border-slate-200', 'hover:text-purple-500');
+                // We need to re-render the icon, but for simplicity let's just change color 
+                // and maybe swap innerHTML if we wanted to be perfect, but visual cue is enough.
+                icon.setAttribute('data-lucide', 'volume-x'); 
+            } else {
+                // Change back
+                btn.classList.remove('text-red-400', 'border-red-200');
+                btn.classList.add('text-slate-500', 'border-slate-200', 'hover:text-purple-500');
+                icon.setAttribute('data-lucide', 'volume-2');
+                AudioEngine.click(); // Play sound to confirm on
+            }
+            lucide.createIcons();
+        }
+
+        // Global Event Delegation for Sounds
+        let lastHovered = null;
+
+        // Wake up audio context on first user interaction
+        document.addEventListener('click', () => AudioEngine.init(), { once: true });
+
+        // Hover Sounds
+        document.addEventListener('mouseover', (e) => {
+            // Find closest interactive element
+            const target = e.target.closest('a, button, .card-bounce, .group');
+            
+            // If we moved into a new interactive element
+            if (target && target !== lastHovered) {
+                AudioEngine.hover();
+                lastHovered = target;
+            } else if (!target) {
+                lastHovered = null;
+            }
+        });
+
+        // Click Sounds
+        document.addEventListener('click', (e) => {
+            const target = e.target.closest('a, button, .card-bounce');
+            if (target && target.id !== 'sound-toggle') { // toggle handles its own sound
+                AudioEngine.click();
+            }
+        });
+
+
         // --- CONFIGURATION ---
         // Grouped configuration with specific icons and descriptions
         const appGroups = [
@@ -177,17 +301,28 @@
 
         document.getElementById('year').textContent = new Date().getFullYear();
 
-        // Helper to get description from file if needed, otherwise use config
+        // Helper to get description: Priority = File -> Config -> Default
         async function getDescription(app) {
-            if (app.description) return app.description;
+            // 1. Try to fetch description.txt
             try {
                 const response = await fetch(`${app.folder}/description.txt`);
-                if (!response.ok) throw new Error('No description');
-                const text = await response.text();
-                return text.trim();
+                if (response.ok) {
+                    const text = await response.text();
+                    // Only return if text is not empty/whitespace
+                    if (text && text.trim().length > 0) {
+                        return text.trim();
+                    }
+                }
             } catch (e) {
-                return "A fun web app waiting to be explored!";
+                // Silently fail to console, proceed to fallback
+                console.log(`Note: Could not load description.txt for ${app.folder} (using fallback).`);
             }
+
+            // 2. Fallback to hardcoded config
+            if (app.description) return app.description;
+            
+            // 3. Final default
+            return "A fun web app waiting to be explored!";
         }
 
         async function init() {
