@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bunny Kanji</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icon_big.png">
+    <link rel="apple-touch-icon" href="icon_big.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#f43f5e">
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        
+        .card-content::-webkit-scrollbar { width: 6px; }
+        .card-content::-webkit-scrollbar-track { background: transparent; }
+        .card-content::-webkit-scrollbar-thumb { background-color: #cbd5e1; border-radius: 20px; }
+        
+        .no-select { user-select: none; -webkit-user-select: none; }
+        
+        /* Swipe Animations */
+        @keyframes fadeOutLeft { to { transform: translateX(-150%) rotate(-30deg); opacity: 0; } }
+        @keyframes fadeOutRight { to { transform: translateX(150%) rotate(30deg); opacity: 0; } }
+        .animate-swipe-left { animation: fadeOutLeft 0.3s forwards; }
+        .animate-swipe-right { animation: fadeOutRight 0.3s forwards; }
+
+        /* VFX: Shake */
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        .shake-screen { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+
+        /* VFX: Particles */
+        @keyframes particle-explode {
+            0% { transform: translate(0, 0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--tw-translate-x), var(--tw-translate-y)) scale(0); opacity: 0; }
+        }
+        .particle {
+            position: absolute;
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particle-explode 0.6s ease-out forwards;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 touch-none overscroll-none">
+
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo, useCallback } = React;
+
+        // --- AUDIO ENGINE (Synthesizer) ---
+        const AudioSys = {
+            ctx: null,
+            init: function() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            },
+            playTone: function(freq, type, duration, vol=0.1) {
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + duration);
+            },
+            playClick: function() {
+                this.init();
+                // Short bubbly sine pip
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1200, this.ctx.currentTime + 0.1);
+                // Volume bumped from 0.05 to 0.3
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.1);
+            },
+            playSwoosh: function() {
+                this.init();
+                // White noise burst with filter sweep
+                const bufferSize = this.ctx.sampleRate * 0.3;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(200, this.ctx.currentTime);
+                filter.frequency.exponentialRampToValueAtTime(3000, this.ctx.currentTime + 0.2);
+                
+                const gain = this.ctx.createGain();
+                // Volume bumped from 0.1 to 0.4
+                gain.gain.setValueAtTime(0.4, this.ctx.currentTime);
+                gain.gain.linearRampToValueAtTime(0, this.ctx.currentTime + 0.3);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+            },
+            playFlip: function() {
+                this.init();
+                // Short, sharp noise burst for paper flip
+                const bufferSize = this.ctx.sampleRate * 0.1;
+                const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+                const noise = this.ctx.createBufferSource();
+                noise.buffer = buffer;
+                
+                // Highpass filter to make it sound thin/crisp
+                const filter = this.ctx.createBiquadFilter();
+                filter.type = 'highpass';
+                filter.frequency.value = 1000;
+
+                const gain = this.ctx.createGain();
+                gain.gain.setValueAtTime(0.3, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.1);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+                noise.start();
+            },
+            playStamp: function() {
+                this.init();
+                // Heavy Thud (Low Sine)
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.frequency.setValueAtTime(150, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.3);
+                // Volume bumped to 0.6
+                gain.gain.setValueAtTime(0.6, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.3);
+                // Snare Snap (Noise)
+                this.playSwoosh(); 
+            },
+            playCorrect: function() {
+                this.init();
+                // Major Chord Arpeggio
+                const now = this.ctx.currentTime;
+                [523.25, 659.25, 783.99].forEach((freq, i) => { // C Major
+                    setTimeout(() => this.playTone(freq, 'sine', 0.4, 0.2), i * 80);
+                });
+            },
+            playWrong: function() {
+                this.init();
+                // Descending Dissonant
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(150, now);
+                osc.frequency.linearRampToValueAtTime(50, now + 0.4);
+                gain.gain.setValueAtTime(0.2, now);
+                gain.gain.linearRampToValueAtTime(0, now + 0.4);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 0.4);
+            }
+        };
+
+        // --- ICONS ---
+        const Icons = {
+            Settings: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>,
+            ArrowLeft: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M19 12H5M12 19l-7-7 7-7"/></svg>,
+            Book: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>,
+            Zap: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>,
+            Trash: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>,
+            Brain: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>,
+            Chart: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="12" y1="20" x2="12" y2="10"/><line x1="18" y1="20" x2="18" y2="4"/><line x1="6" y1="20" x2="6" y2="16"/></svg>,
+            Check: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><polyline points="20 6 9 17 4 12"/></svg>,
+            X: (p) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" {...p}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        };
+
+        // --- UTILS ---
+        const parseCSV = (csvText) => { /* Same as before, keeping it compact for file size */
+            const lines = csvText.trim().split(/\r?\n/);
+            if (lines.length < 2) return []; 
+            const data = [];
+            const regex = /(?:,|\n|^)("(?:(?:"")*[^"]*)*"|[^",\n]*|(?:\n|$))/g;
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i];
+                if (!line.trim()) continue;
+                const matches = [];
+                let match = regex.exec(line);
+                while (match) {
+                    let val = match[1] || match[0];
+                    if (val.startsWith(',')) val = val.substring(1);
+                    if (val.startsWith('"') && val.endsWith('"')) { val = val.substring(1, val.length - 1).replace(/""/g, '"'); }
+                    matches.push(val.trim());
+                    match = regex.exec(line);
+                    if (match && match.index === regex.lastIndex) regex.lastIndex++; 
+                    if (matches.length >= 8) break; 
+                }
+                const row = matches.length > 0 ? matches : line.split(','); 
+                if (row.length >= 7) data.push(transformRow(row));
+            }
+            return data;
+        };
+
+        const transformRow = (row) => {
+            const [kanji, level, hanviet, onKanaStr, onRomajiStr, kunKanaStr, kunRomajiStr, examplesStr] = row;
+            const parseReadings = (k, r) => {
+                if (!k || k === 'null') return [];
+                const ks = k.split(',').map(s => s.trim());
+                const rs = r ? r.split(',').map(s => s.trim()) : [];
+                return ks.map((v, i) => ({ kana: v, romaji: rs[i] || '' }));
+            };
+            const parseExamples = (exStr) => {
+                if (!exStr) return [];
+                return exStr.split(';').map(raw => {
+                    const match = raw.match(/([^(]+)\s*\(([^)]+)\)\s*\[([^\]]+)\]:\s*(.+)/);
+                    if (match) return { text: match[1].trim(), furi: match[2].trim(), romaji: match[3].trim(), mean: match[4].trim() };
+                    return { text: raw.trim(), furi: '', romaji: '', mean: '' };
+                }).filter(e => e.text);
+            };
+            return {
+                id: kanji.trim(), 
+                kanji: kanji.trim(), level: parseInt(level) || 5, hanviet: hanviet,
+                on: parseReadings(onKanaStr, onRomajiStr), kun: parseReadings(kunKanaStr, kunRomajiStr),
+                examples: parseExamples(examplesStr)
+            };
+        };
+
+        const shuffleArray = (array) => {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+        };
+
+        // --- COMPONENTS ---
+        const FuriganaText = ({ text, furi, romaji, showRomaji }) => (
+            <div className="flex flex-col items-center justify-center">
+                <div className="text-[10px] text-slate-500 leading-none mb-0.5 min-h-[10px]">{furi}</div>
+                <div className="text-lg leading-none font-medium text-slate-800">{text}</div>
+                {showRomaji && <div className="text-[10px] text-rose-500 font-medium leading-tight mt-0.5 animate-in fade-in">{romaji}</div>}
+            </div>
+        );
+
+        // --- PARTICLE SYSTEM ---
+        const Particles = ({ particles }) => {
+            return (
+                <div className="fixed inset-0 pointer-events-none overflow-hidden" style={{zIndex: 9999}}>
+                    {particles.map(p => (
+                        <div key={p.id} className="particle"
+                            style={{
+                                left: p.x, top: p.y,
+                                backgroundColor: p.color,
+                                '--tw-translate-x': `${p.dx}px`,
+                                '--tw-translate-y': `${p.dy}px`
+                            }}
+                        />
+                    ))}
+                </div>
+            );
+        };
+
+        const LevelSelector = ({ onSelect, title, description, showCount }) => {
+            const levels = [
+                { val: 5, label: "N5", desc: "Beginner" }, { val: 4, label: "N4", desc: "Basic" },
+                { val: 3, label: "N3", desc: "Intermediate" }, { val: 2, label: "N2", desc: "Advanced" }, { val: 1, label: "N1", desc: "Native" },
+            ];
+            
+            const handleSelect = (val) => {
+                AudioSys.playClick();
+                onSelect(val);
+            }
+
+            return (
+                <div className="h-screen flex flex-col p-6 bg-slate-50 overflow-y-auto">
+                    <button onClick={() => handleSelect(null)} className="text-slate-400 mb-6 font-bold self-start flex items-center gap-2"><Icons.ArrowLeft className="w-5 h-5" /> Back</button>
+                    <h2 className="text-2xl font-bold mb-2">{title}</h2>
+                    <p className="text-sm text-slate-400 mb-6">{description}</p>
+                    <div className="grid gap-3">
+                        {levels.map(l => (
+                            <button key={l.val} onClick={() => handleSelect(l.val)}
+                                className="w-full text-left p-4 bg-white rounded-xl shadow-sm border border-slate-100 flex justify-between items-center hover:border-rose-300 active:scale-95 transition-all">
+                                <div><div className="font-bold text-xl text-slate-800">{l.label}</div><div className="text-xs text-slate-400">{l.desc}</div></div>
+                                <div className="flex items-center gap-3">
+                                    {showCount && <span className="text-xs text-slate-400 font-medium">Select</span>}
+                                    <div className="w-8 h-8 rounded-full bg-rose-50 text-rose-500 flex items-center justify-center">→</div>
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        function App() {
+            // Data
+            const [kanjiData, setKanjiData] = useState([]);
+            const [isLoading, setIsLoading] = useState(true);
+            const [error, setError] = useState(null);
+            const [mode, setMode] = useState('menu'); 
+            const [viewLevel, setViewLevel] = useState(null);
+            
+            // Flashcard
+            const [deck, setDeck] = useState([]);
+            const [finishedCount, setFinishedCount] = useState(0);
+            const [initialDeckSize, setInitialDeckSize] = useState(0);
+            const [isFlipped, setIsFlipped] = useState(false);
+            const [dragDelta, setDragDelta] = useState({ x: 0, y: 0 });
+            const [isDragging, setIsDragging] = useState(false);
+            const [swipeResult, setSwipeResult] = useState(null); 
+            
+            // Quiz
+            const [quizDeck, setQuizDeck] = useState([]);
+            const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+            const [quizScore, setQuizScore] = useState(0);
+            const [selectedAnswer, setSelectedAnswer] = useState(null);
+            const [quizFeedback, setQuizFeedback] = useState(null);
+            
+            // Persistence
+            const [showSettings, setShowSettings] = useState(false);
+            const [showRomaji, setShowRomaji] = useState(true);
+            const [hideStudied, setHideStudied] = useState(false);
+            const [studiedIds, setStudiedIds] = useState(new Set()); 
+            const [quizStats, setQuizStats] = useState({});
+            
+            // VFX State
+            const [shake, setShake] = useState(false);
+            const [particles, setParticles] = useState([]);
+            const dragStartRef = useRef(null);
+
+            // --- EFFECTS ---
+            useEffect(() => {
+                const load = async () => {
+                    try {
+                        const savedStudied = JSON.parse(localStorage.getItem('bk_studied_ids') || '[]');
+                        setStudiedIds(new Set(savedStudied));
+                        setHideStudied(localStorage.getItem('bk_hide_studied') === 'true');
+                        setQuizStats(JSON.parse(localStorage.getItem('bk_quiz_stats') || '{}'));
+
+                        const res = await fetch('joyo_kanji_final.csv');
+                        if (!res.ok) throw new Error("Missing joyo_kanji_final.csv");
+                        const text = await res.text();
+                        const parsed = parseCSV(text);
+                        if (!parsed.length) throw new Error("CSV empty.");
+                        setKanjiData(parsed); setIsLoading(false);
+                    } catch (e) { setError(e.message); setIsLoading(false); }
+                };
+                load();
+            }, []);
+
+            // Clear shake class after animation
+            useEffect(() => {
+                if (shake) {
+                    const t = setTimeout(() => setShake(false), 400);
+                    return () => clearTimeout(t);
+                }
+            }, [shake]);
+
+            // --- VFX HELPERS ---
+            const triggerJuice = () => {
+                // 1. Shake Screen
+                setShake(true);
+                // 2. Play Stamp Sound
+                AudioSys.playStamp();
+                // 3. Add Particles (Smoke/Explosion center screen)
+                const newParticles = [];
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+                for (let i = 0; i < 20; i++) {
+                    const angle = Math.random() * Math.PI * 2;
+                    const velocity = 50 + Math.random() * 100;
+                    newParticles.push({
+                        id: Math.random(),
+                        x: cx, y: cy,
+                        dx: Math.cos(angle) * velocity,
+                        dy: Math.sin(angle) * velocity,
+                        color: Math.random() > 0.5 ? '#e2e8f0' : '#f43f5e' // Grey or Rose
+                    });
+                }
+                setParticles(p => [...p, ...newParticles]);
+                setTimeout(() => setParticles(p => p.slice(20)), 600); // Cleanup
+            };
+
+            const playClick = () => AudioSys.playClick();
+
+            // --- DATA HELPERS ---
+            const saveQuizStats = (newStats) => {
+                setQuizStats(newStats);
+                localStorage.setItem('bk_quiz_stats', JSON.stringify(newStats));
+            };
+            const markFlashcardStudied = (id) => {
+                const newSet = new Set(studiedIds); newSet.add(id);
+                setStudiedIds(newSet);
+                localStorage.setItem('bk_studied_ids', JSON.stringify([...newSet]));
+            };
+            const resetProgress = () => {
+                playClick();
+                if(confirm("Reset ALL progress (Flashcards & Quiz Mastery)?")) {
+                    setStudiedIds(new Set()); localStorage.setItem('bk_studied_ids', '[]');
+                    setQuizStats({}); localStorage.setItem('bk_quiz_stats', '{}');
+                    alert("Progress reset.");
+                }
+            };
+
+            // --- MODES ---
+            const startFlashcardSession = (deckData) => {
+                let final = deckData;
+                if (hideStudied) final = final.filter(k => !studiedIds.has(k.id));
+                if (!final.length) { alert("All cards in this selection are studied!"); return; }
+                setDeck(final); setInitialDeckSize(final.length); setFinishedCount(0);
+                setSwipeResult(null); setIsFlipped(false); setDragDelta({ x: 0, y: 0 }); setMode('active-flashcard');
+            };
+            const startStudy = (lvl) => { playClick(); if (!lvl) { setMode('menu'); return; } startFlashcardSession(shuffleArray(kanjiData.filter(k => k.level >= lvl))); };
+            const startPractice = (lvl) => { playClick(); if (!lvl) { setMode('menu'); return; } const pool = kanjiData.filter(k => k.level >= lvl); const count = 10 + ({5:0,4:5,3:10,2:15,1:20}[lvl] || 0); startFlashcardSession(shuffleArray(pool).slice(0, count)); };
+            const startQuiz = (lvl) => {
+                playClick();
+                if (!lvl) { setMode('menu'); return; }
+                const pool = kanjiData.filter(k => k.level >= lvl);
+                const candidates = pool.map(k => {
+                    const streak = (quizStats[k.id]?.streak || 0);
+                    const weight = Math.max(0, 20 - streak);
+                    return { ...k, weight };
+                }).filter(c => c.weight > 0);
+
+                if (candidates.length === 0) { alert("You have mastered (streak 20+) all Kanji in this level! Great job!"); setMode('menu'); return; }
+
+                const selected = [];
+                const tempPool = [...candidates];
+                for (let i = 0; i < 20 && tempPool.length > 0; i++) {
+                    const totalWeight = tempPool.reduce((sum, c) => sum + c.weight, 0);
+                    let r = Math.random() * totalWeight;
+                    let idx = 0;
+                    for (let j = 0; j < tempPool.length; j++) { r -= tempPool[j].weight; if (r <= 0) { idx = j; break; } }
+                    selected.push(tempPool[idx]); tempPool.splice(idx, 1);
+                }
+
+                const quizQuestions = selected.map(q => {
+                    const others = kanjiData.filter(k => k.id !== q.id && k.level >= lvl);
+                    const distractors = shuffleArray(others).slice(0, 3);
+                    const options = shuffleArray([q, ...distractors]);
+                    return { question: q, options };
+                });
+
+                setQuizDeck(quizQuestions); setCurrentQuizIndex(0); setQuizScore(0); setQuizFeedback(null); setMode('active-quiz');
+            };
+
+            // --- INTERACTIONS ---
+            const onSwipeRight = () => { // Studied
+                AudioSys.playSwoosh();
+                setSwipeResult('right');
+                markFlashcardStudied(deck[0].id);
+                setTimeout(() => {
+                    setDeck(d => d.slice(1)); setFinishedCount(c => c + 1); setSwipeResult(null); setDragDelta({x:0,y:0}); setIsFlipped(false);
+                }, 300);
+            };
+            const onSwipeLeft = () => { // Practice
+                AudioSys.playSwoosh();
+                setSwipeResult('left');
+                const card = deck[0];
+                setTimeout(() => {
+                    setDeck(d => {
+                        const rem = d.slice(1); if (!rem.length) return [card];
+                        const idx = Math.floor(Math.random() * rem.length) + 1;
+                        const n = [...rem]; n.splice(idx, 0, card); return n;
+                    });
+                    setSwipeResult(null); setDragDelta({x:0,y:0}); setIsFlipped(false);
+                }, 300);
+            };
+            const onPD = (e) => { if (swipeResult) return; setIsDragging(true); dragStartRef.current = { x: e.clientX || e.touches[0].clientX }; };
+            const onPM = (e) => { if (!isDragging) return; setDragDelta({ x: (e.clientX || e.touches[0].clientX) - dragStartRef.current.x, y: 0 }); };
+            const onPU = () => { setIsDragging(false); if (dragDelta.x > 100) onSwipeRight(); else if (dragDelta.x < -100) onSwipeLeft(); else setDragDelta({x:0,y:0}); };
+            const onClickCard = () => { 
+                if (Math.abs(dragDelta.x) < 10) { 
+                    AudioSys.playFlip(); // Added flip sound here
+                    setIsFlipped(!isFlipped); 
+                } 
+            };
+
+            const handleAnswer = (option) => {
+                if (selectedAnswer) return; 
+                const q = quizDeck[currentQuizIndex].question;
+                const isCorrect = option.id === q.id;
+                
+                setSelectedAnswer(isCorrect ? 'correct' : 'wrong');
+                if (isCorrect) {
+                    setQuizScore(s => s + 1);
+                    AudioSys.playCorrect();
+                } else {
+                    AudioSys.playWrong();
+                }
+
+                triggerJuice(); // Shake + Stamp Sound + Particles
+
+                const stats = { ...quizStats };
+                const oldStreak = stats[q.id]?.streak || 0;
+                const newStreak = isCorrect ? oldStreak + 1 : Math.max(0, oldStreak - 3);
+                const diff = newStreak - oldStreak;
+                stats[q.id] = { streak: newStreak };
+                saveQuizStats(stats);
+                
+                setQuizFeedback({ visible: true, isCorrect, streak: newStreak, diff });
+
+                setTimeout(() => {
+                    setSelectedAnswer(null); setQuizFeedback(null);
+                    if (currentQuizIndex < quizDeck.length - 1) { setCurrentQuizIndex(i => i + 1); } else { setMode('quiz-result'); }
+                }, 1500);
+            };
+
+            // --- RENDER ---
+            if (isLoading) return <div className="h-screen flex items-center justify-center text-slate-500">Loading...</div>;
+            if (error) return <div className="p-10 text-center text-red-500">{error}</div>;
+
+            return (
+                <div className={`w-full h-full ${shake ? 'shake-screen' : ''}`}>
+                    <Particles particles={particles} />
+                    
+                    {/* MENU */}
+                    {mode === 'menu' && (
+                        <div className="h-screen flex flex-col items-center justify-center p-6 bg-slate-50 relative">
+                            <button onClick={() => {playClick(); setShowSettings(true);}} className="absolute top-6 right-6 text-slate-400"><Icons.Settings className="w-6 h-6" /></button>
+                            <div className="mb-8 text-center"><h1 className="text-4xl font-bold text-slate-800 mb-2">Bunny<span className="text-rose-500">Kanji</span></h1><p className="text-slate-400">Master Japanese Characters</p></div>
+                            <div className="w-full max-w-sm space-y-3">
+                                <button onClick={() => {playClick(); setMode('setup-study');}} className="w-full py-4 bg-slate-800 text-white rounded-2xl font-bold shadow-lg flex items-center justify-center gap-3 active:scale-95 transition-transform"><Icons.Book className="w-6 h-6" /> Study Mode</button>
+                                <button onClick={() => {playClick(); setMode('setup-practice');}} className="w-full py-4 bg-white text-rose-500 border-2 border-rose-100 rounded-2xl font-bold shadow-sm flex items-center justify-center gap-3 active:scale-95 transition-transform"><Icons.Zap className="w-6 h-6" /> Quick Practice</button>
+                                <button onClick={() => {playClick(); setMode('setup-quiz');}} className="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold shadow-lg shadow-rose-200 flex items-center justify-center gap-3 active:scale-95 transition-transform"><Icons.Brain className="w-6 h-6" /> Quiz Challenge</button>
+                                <button onClick={() => {playClick(); setMode('progression');}} className="w-full py-4 bg-slate-100 text-slate-600 rounded-2xl font-bold flex items-center justify-center gap-3 active:scale-95 transition-transform"><Icons.Chart className="w-6 h-6" /> Progression</button>
+                            </div>
+                            {showSettings && <SettingsModal onClose={()=>{playClick(); setShowSettings(false);}} />}
+                        </div>
+                    )}
+
+                    {mode === 'setup-study' && <LevelSelector onSelect={startStudy} title="Study Mode" description="Swipe cards. Left to repeat, Right to mark as studied." showCount={true} />}
+                    {mode === 'setup-practice' && <LevelSelector onSelect={startPractice} title="Quick Practice" description="Random 10+ cards from selected level." showCount={false} />}
+                    {mode === 'setup-quiz' && <LevelSelector onSelect={startQuiz} title="Quiz Challenge" description="20 weighted questions. Master cards to remove them." showCount={false} />}
+
+                    {/* PROGRESSION */}
+                    {mode === 'progression' && (
+                        <div className="h-screen flex flex-col bg-slate-50 p-6 overflow-y-auto">
+                            <button onClick={() => {playClick(); setMode('menu');}} className="mb-6 font-bold text-slate-400 flex gap-2"><Icons.ArrowLeft className="w-5 h-5"/> Back</button>
+                            <h2 className="text-2xl font-bold mb-6">Mastery Progress</h2>
+                            <div className="space-y-6">
+                                {[5,4,3,2,1].map(lvl => {
+                                    const total = kanjiData.filter(k => k.level === lvl).length;
+                                    const learned = kanjiData.filter(k => k.level === lvl && (quizStats[k.id]?.streak || 0) >= 20).length;
+                                    const pct = total ? Math.round((learned/total)*100) : 0;
+                                    return (
+                                        <div key={lvl} onClick={() => {playClick(); setViewLevel(lvl); setMode('progression-detail');}} className="bg-white p-4 rounded-xl shadow-sm cursor-pointer hover:border-rose-300 border border-transparent transition-all hover:scale-[1.02] active:scale-95">
+                                            <div className="flex justify-between mb-2">
+                                                <span className="font-bold text-slate-700">N{lvl}</span>
+                                                <span className="text-xs text-slate-500">{learned}/{total} Mastered</span>
+                                            </div>
+                                            <div className="w-full h-3 bg-slate-100 rounded-full overflow-hidden">
+                                                <div className="h-full bg-rose-500 transition-all duration-1000" style={{width: `${pct}%`}}></div>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                            <div className="mt-8 text-xs text-center text-slate-400">"Mastered" = 20 consecutive correct answers in Quiz mode. Tap a level to see details.</div>
+                        </div>
+                    )}
+
+                    {/* PROGRESSION DETAIL GRID */}
+                    {mode === 'progression-detail' && (
+                        <div className="h-screen flex flex-col bg-slate-50 p-6 overflow-hidden">
+                            <button onClick={() => {playClick(); setMode('progression'); setViewLevel(null);}} className="mb-4 font-bold text-slate-400 flex gap-2"><Icons.ArrowLeft className="w-5 h-5"/> Back</button>
+                            <h2 className="text-2xl font-bold mb-4">N{viewLevel} Kanji Mastery</h2>
+                            <div className="flex-1 overflow-y-auto pr-2 pb-6">
+                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-3">
+                                    {kanjiData.filter(k => k.level === viewLevel).map(k => {
+                                        const streak = quizStats[k.id]?.streak || 0;
+                                        const cappedStreak = Math.min(streak, 20);
+                                        const pct = (cappedStreak / 20) * 100;
+                                        return (
+                                            <div key={k.id} className="bg-white p-3 rounded-xl shadow-sm border border-slate-100 flex flex-col items-center justify-center">
+                                                <div className="text-3xl font-serif text-slate-800 mb-2">{k.kanji}</div>
+                                                <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden mb-1">
+                                                    <div className="h-full bg-rose-500 transition-all" style={{width: `${pct}%`}}></div>
+                                                </div>
+                                                <div className="text-[10px] text-slate-400 font-bold">{cappedStreak}/20 streaks</div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* ACTIVE QUIZ */}
+                    {mode === 'active-quiz' && (
+                        <div className="h-screen flex flex-col bg-slate-50 relative">
+                            {quizFeedback && quizFeedback.visible && (
+                                <div className="absolute inset-0 z-50 flex items-center justify-center pointer-events-none animate-in fade-in zoom-in duration-300">
+                                    <div className={`border-8 ${quizFeedback.isCorrect ? 'border-green-500 text-green-500' : 'border-rose-500 text-rose-500'} bg-white/95 backdrop-blur-sm shadow-2xl p-8 rounded-3xl transform -rotate-12 flex flex-col items-center`}>
+                                        <div className="text-6xl font-black tracking-tighter mb-2">{quizFeedback.isCorrect ? 'CORRECT' : 'WRONG'}</div>
+                                        <div className="text-2xl font-bold flex gap-3 items-center">
+                                            <span>Streak: {quizFeedback.streak}</span>
+                                            <span className={`px-2 py-0.5 rounded-lg text-white text-lg ${quizFeedback.diff >= 0 ? 'bg-green-500' : 'bg-rose-500'}`}>{quizFeedback.diff >= 0 ? '+' : ''}{quizFeedback.diff}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                            <header className="p-4 flex justify-between items-center bg-white shadow-sm">
+                                <span className="font-bold text-rose-500">Quiz</span>
+                                <span className="text-sm font-bold text-slate-400">{currentQuizIndex + 1} / {quizDeck.length}</span>
+                            </header>
+                            <div className="flex-1 flex flex-col items-center justify-center p-6">
+                                <div className="text-9xl font-serif text-slate-800 mb-8 animate-in zoom-in duration-300">{quizDeck[currentQuizIndex].question.kanji}</div>
+                                <div className="grid grid-cols-2 gap-3 w-full max-w-md">
+                                    {quizDeck[currentQuizIndex].options.map((opt, i) => {
+                                        const isCorrect = opt.id === quizDeck[currentQuizIndex].question.id;
+                                        let btnClass = "bg-white border-2 border-slate-100 text-slate-600 hover:border-rose-200 active:scale-95";
+                                        if (selectedAnswer) {
+                                            if (isCorrect) btnClass = "bg-green-500 border-green-500 text-white";
+                                            else if (selectedAnswer === 'wrong' && !isCorrect) btnClass = "opacity-40 grayscale"; 
+                                            else if (selectedAnswer === 'wrong' && opt.id === selectedAnswer.id) btnClass = "opacity-40"; 
+                                        }
+                                        return (
+                                            <button key={i} onClick={() => {playClick(); handleAnswer(opt);}} disabled={!!selectedAnswer}
+                                                className={`p-4 rounded-xl shadow-sm text-left transition-all flex flex-col gap-1 ${btnClass}`}>
+                                                <div className="font-bold text-lg">{opt.hanviet}</div>
+                                                <div className="text-xs opacity-80 whitespace-normal">{opt.on.map(o=>o.kana).join(', ')}</div>
+                                                <div className="text-xs opacity-80 whitespace-normal">{opt.kun.map(k=>k.kana).join(', ')}</div>
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    {mode === 'quiz-result' && (
+                        <div className="h-screen flex flex-col items-center justify-center p-6 text-center bg-slate-50">
+                            <div className="text-6xl mb-4">{quizScore >= 15 ? '🎉' : '💪'}</div>
+                            <h2 className="text-3xl font-bold text-slate-800 mb-2">Quiz Complete!</h2>
+                            <div className="text-xl text-slate-500 mb-8">Score: <span className="text-rose-500 font-bold">{quizScore}</span> / {quizDeck.length}</div>
+                            <button onClick={() => {playClick(); setMode('menu');}} className="px-8 py-3 bg-slate-800 text-white rounded-full font-bold shadow-lg">Back to Menu</button>
+                        </div>
+                    )}
+
+                    {/* ACTIVE FLASHCARD */}
+                    {mode === 'active-flashcard' && (
+                        <div className="h-screen flex flex-col overflow-hidden bg-slate-50 relative selection:bg-rose-200">
+                            {!deck[0] ? (
+                                <div className="h-screen flex flex-col items-center justify-center p-6 text-center">
+                                    <div className="text-6xl mb-4">🎉</div><h2 className="text-2xl font-bold mb-2">Done!</h2>
+                                    <button onClick={() => {playClick(); setMode('menu');}} className="px-8 py-3 bg-rose-500 text-white rounded-full font-bold">Menu</button>
+                                </div>
+                            ) : (
+                                <>
+                                <header className="px-6 py-4 flex justify-between items-center z-10">
+                                    <div className="flex items-center gap-2">
+                                        <button onClick={() => {playClick(); setMode('menu');}} className="text-slate-400"><Icons.ArrowLeft className="w-5 h-5" /></button>
+                                        <span className="text-sm font-bold text-slate-400">{finishedCount + 1} / {initialDeckSize}</span>
+                                    </div>
+                                    <button onClick={() => {playClick(); setShowSettings(true);}} className="text-slate-400"><Icons.Settings className="w-6 h-6" /></button>
+                                </header>
+                                <div className="w-full h-1 bg-slate-200"><div className="h-full bg-rose-500 transition-all duration-500" style={{ width: `${(finishedCount/initialDeckSize)*100}%` }}></div></div>
+
+                                <main className="flex-1 flex flex-col items-center justify-center p-4 relative w-full max-w-md mx-auto perspective-1000">
+                                    <div className={`relative w-full aspect-[3/4] ${swipeResult === 'left' ? 'animate-swipe-left' : swipeResult === 'right' ? 'animate-swipe-right' : ''}`} 
+                                        style={{ transform: `translateX(${dragDelta.x}px) rotate(${dragDelta.x * 0.1}deg)`, transition: isDragging ? 'none' : 'transform 0.3s ease-out', cursor: isDragging ? 'grabbing' : 'grab' }}
+                                        onMouseDown={onPD} onMouseMove={onPM} onMouseUp={onPU} onMouseLeave={onPU} onTouchStart={onPD} onTouchMove={onPM} onTouchEnd={onPU}>
+                                        
+                                        <div className="absolute top-8 left-8 border-4 border-green-500 text-green-500 font-bold text-3xl px-4 py-2 rounded-xl transform -rotate-12 z-50 pointer-events-none" style={{ opacity: Math.max(dragDelta.x/100, 0) }}>STUDIED</div>
+                                        <div className="absolute top-8 right-8 border-4 border-rose-500 text-rose-500 font-bold text-3xl px-4 py-2 rounded-xl transform rotate-12 z-50 pointer-events-none" style={{ opacity: Math.max(-dragDelta.x/100, 0) }}>PRACTICE</div>
+
+                                        <div className={`w-full h-full relative transition-transform duration-500 transform-style-3d shadow-2xl rounded-3xl bg-white`} style={{ transform: isFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)' }} onClick={onClickCard}>
+                                            <div className="absolute inset-0 backface-hidden rounded-3xl flex flex-col items-center justify-center border border-slate-100 bg-white overflow-hidden z-20">
+                                                <div className="absolute top-[-50px] right-[-50px] w-40 h-40 bg-rose-50 rounded-full blur-2xl opacity-50 pointer-events-none"></div>
+                                                <div className="relative z-10 flex flex-col items-center pointer-events-none no-select">
+                                                    <div className="text-xs font-bold text-rose-200 mb-4">N{deck[0].level}</div><span className="text-9xl font-light text-slate-800 mb-8 font-serif">{deck[0].kanji}</span><span className="text-xs text-slate-300 font-medium uppercase tracking-widest">Tap to flip</span>
+                                                </div>
+                                            </div>
+                                            <div className="absolute inset-0 backface-hidden rotate-y-180 rounded-3xl flex flex-col p-6 border border-slate-100 bg-white overflow-hidden z-20">
+                                                <div className="card-content h-full overflow-y-auto pr-1">
+                                                    <div className="flex items-start justify-between border-b border-slate-100 pb-4 mb-4">
+                                                        <div className="text-5xl font-serif text-slate-800">{deck[0].kanji}</div><div className="text-right"><div className="text-xs text-slate-400 uppercase tracking-wider mb-1">Hán Việt</div><div className="text-xl font-bold text-rose-600">{deck[0].hanviet}</div></div>
+                                                    </div>
+                                                    <div className="grid grid-cols-2 gap-3 mb-4">
+                                                        <div className="bg-slate-50 p-2 rounded-lg"><div className="text-[10px] text-slate-400 font-bold mb-1 uppercase">Onyomi</div><div className="flex flex-wrap gap-2">{deck[0].on.map((r, i) => (<div key={i}><span className="text-sm font-bold text-slate-700">{r.kana}</span>{showRomaji && <div className="text-[9px] text-rose-400">{r.romaji}</div>}</div>))}</div></div>
+                                                        <div className="bg-slate-50 p-2 rounded-lg"><div className="text-[10px] text-slate-400 font-bold mb-1 uppercase">Kunyomi</div><div className="flex flex-wrap gap-2">{deck[0].kun.map((r, i) => (<div key={i}><span className="text-sm font-bold text-slate-700">{r.kana}</span>{showRomaji && <div className="text-[9px] text-rose-400">{r.romaji}</div>}</div>))}</div></div>
+                                                    </div>
+                                                    <div className="space-y-3">
+                                                        {deck[0].examples.map((ex, i) => (
+                                                            <div key={i} className="flex items-start justify-between pb-2 border-b border-slate-50 last:border-0"><div className="flex items-center gap-2"><div className="w-0.5 h-8 bg-rose-200"></div><FuriganaText text={ex.text} furi={ex.furi} romaji={ex.romaji} showRomaji={showRomaji} /></div><div className="text-xs text-slate-500 text-right w-1/2 pt-1 leading-tight">{ex.mean}</div></div>
+                                                        ))}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </main>
+                                <footer className="p-4 text-center text-xs text-slate-400 pb-8 flex justify-center gap-8 opacity-60">
+                                    <div className="flex flex-col items-center gap-1"><div className="w-8 h-8 rounded-full bg-rose-100 text-rose-500 flex items-center justify-center">←</div><span>Practice More</span></div>
+                                    <div className="flex flex-col items-center gap-1"><div className="w-8 h-8 rounded-full bg-green-100 text-green-500 flex items-center justify-center">→</div><span>Studied</span></div>
+                                </footer>
+                                </>
+                            )}
+                            {showSettings && <SettingsModal onClose={()=>{playClick(); setShowSettings(false);}} />}
+                        </div>
+                    )}
+                </div>
+            );
+
+            function SettingsModal({onClose}) {
+                return (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+                        <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={onClose}></div>
+                        <div className="bg-white rounded-2xl w-full max-w-sm shadow-2xl relative z-10 p-6">
+                            <div className="flex justify-between items-center mb-6"><h2 className="text-xl font-bold text-slate-800">Settings</h2><button onClick={onClose} className="p-1"><Icons.X className="w-6 h-6"/></button></div>
+                            <div className="space-y-4">
+                                <div className="bg-slate-50 p-4 rounded-xl flex items-center justify-between">
+                                    <div><div className="font-bold text-slate-700">Show Romaji</div><div className="text-xs text-slate-500">Pronunciation guide</div></div>
+                                    <button onClick={() => {playClick(); setShowRomaji(!showRomaji);}} className="text-rose-500">{showRomaji ? <Icons.Check className="w-8 h-8" /> : <Icons.X className="w-8 h-8 text-slate-300" />}</button>
+                                </div>
+                                <div className="bg-slate-50 p-4 rounded-xl flex items-center justify-between">
+                                    <div><div className="font-bold text-slate-700">Hide Studied</div><div className="text-xs text-slate-500">In Flashcard Mode</div></div>
+                                    <button onClick={()=>{playClick(); const n=!hideStudied;setHideStudied(n);localStorage.setItem('bk_hide_studied',n)}} className="text-rose-500">{hideStudied ? <Icons.Check className="w-8 h-8" /> : <Icons.X className="w-8 h-8 text-slate-300" />}</button>
+                                </div>
+                                <button onClick={resetProgress} className="w-full p-4 rounded-xl border border-red-100 text-red-500 flex items-center justify-center gap-2 hover:bg-red-50"><Icons.Trash className="w-4 h-4" /> Reset All Progress</button>
+                            </div>
+                        </div>
+                    </div>
+                );
+            }
+        }
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(console.log);
+    </script>
+</body>
+</html>
