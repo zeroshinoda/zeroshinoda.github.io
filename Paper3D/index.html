@@ -93,6 +93,35 @@
             border-color: #3b82f6;
             transform: scale(1.1);
         }
+
+        /* Dropdown Menu */
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            bottom: 100%;
+            left: 0;
+            background-color: white;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+            z-index: 1;
+            border-radius: 8px;
+            padding: 4px 0;
+            margin-bottom: 8px;
+            border: 1px solid #e2e8f0;
+        }
+        .dropdown-content button {
+            color: #475569;
+            padding: 8px 16px;
+            text-decoration: none;
+            display: block;
+            width: 100%;
+            text-align: left;
+            font-size: 0.875rem;
+        }
+        .dropdown-content button:hover {
+            background-color: #f1f5f9;
+        }
+        .show { display: block; }
     </style>
     <!-- Import Map for Three.js -->
     <script type="importmap">
@@ -203,36 +232,77 @@
     <div class="absolute bottom-8 left-0 right-0 z-10 flex justify-center pointer-events-none">
         <div id="action-bar" class="tool-panel bg-white/90 shadow-lg rounded-xl p-2 border border-slate-200 pointer-events-auto flex gap-3 items-center">
             
-            <!-- Transform Tools (Build Mode) -->
+            <!-- Main Build Tools Wrapper -->
             <div id="tools-build" class="flex gap-2 items-center">
                 <input type="file" id="file-input" style="display:none" accept=".json">
-                <div class="flex flex-col gap-1 mr-2">
-                    <button id="btn-save" class="px-2 py-1 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 text-[10px] font-bold uppercase tracking-wider">Save JSON</button>
-                    <button id="btn-load" class="px-2 py-1 rounded bg-slate-100 text-slate-600 hover:bg-slate-200 text-[10px] font-bold uppercase tracking-wider">Load JSON</button>
-                </div>
                 
-                <button id="btn-export" class="p-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition font-bold text-xs flex items-center gap-1 mr-2 px-3">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    Export
-                </button>
+                <!-- File Menu Dropdown -->
+                <div class="relative">
+                    <button id="btn-menu" class="px-3 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition font-bold text-xs flex items-center gap-1">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+                        Menu
+                    </button>
+                    <div id="menu-dropdown" class="dropdown-content">
+                        <button id="btn-save" class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            Save JSON
+                        </button>
+                        <button id="btn-load" class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                            Load JSON
+                        </button>
+                        <button id="btn-export" class="flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            Export GLTF
+                        </button>
+                        <div class="border-t border-slate-100 my-1"></div>
+                        <button id="btn-clear" class="flex items-center gap-2 text-red-600 hover:bg-red-50">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                            Clear Scene
+                        </button>
+                    </div>
+                </div>
+
                 <div class="w-px bg-slate-300 mx-1 h-8"></div>
-                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider self-center mr-2">Tools</div>
-                <button id="tool-move" class="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition" title="Move (W)">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-                </button>
-                <button id="tool-rotate" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition" title="Rotate (E)">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
-                <div class="w-px bg-slate-300 mx-1"></div>
-                <button id="btn-anchor" class="p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition" title="Select Origin Anchor">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                </button>
-                <button id="btn-delete" class="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition" title="Delete Selected (Del)">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                </button>
-                 <button id="btn-clear" class="p-2 rounded-lg bg-slate-50 text-slate-500 hover:bg-slate-100 transition" title="Clear All">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                </button>
+                
+                <!-- Undo/Redo Group -->
+                <div class="flex gap-1">
+                    <button id="btn-undo" class="p-2 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 transition disabled:opacity-50 disabled:cursor-not-allowed" title="Undo (Ctrl+Z)">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
+                    </button>
+                    <button id="btn-redo" class="p-2 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 transition disabled:opacity-50 disabled:cursor-not-allowed" title="Redo (Ctrl+Y)">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"></path></svg>
+                    </button>
+                </div>
+
+                <div class="w-px bg-slate-300 mx-1 h-8"></div>
+
+                <!-- Tools Group -->
+                <div class="flex gap-1">
+                    <button id="tool-move" class="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition" title="Move (W)">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
+                    </button>
+                    <button id="tool-rotate" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition" title="Rotate (E)">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    </button>
+                </div>
+
+                <div class="w-px bg-slate-300 mx-1 h-8"></div>
+                
+                <!-- View/Edit Group -->
+                <div class="flex gap-1">
+                    <button id="btn-anchor" class="p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition" title="Select Origin Anchor">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                    </button>
+                    <!-- Default state text-slate-300 because it starts hidden -->
+                    <button id="btn-toggle-anchor" class="p-2 rounded-lg bg-slate-100 text-slate-300 hover:bg-slate-200 transition" title="Toggle Anchor Visibility">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                    </button>
+                    <button id="btn-delete" class="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition" title="Delete Selected (Del)">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                    </button>
+                </div>
+
             </div>
 
             <!-- Draw Tools (Draw Mode) -->
@@ -347,6 +417,12 @@
         // --- Paint Mode ---
         let paintColor = '#000000';
         let isPainting = false;
+        let hasPainted = false; // Track if painting occurred during mouse press
+
+        // --- Undo/Redo State ---
+        const MAX_HISTORY = 10;
+        const history = [];
+        let historyIndex = -1;
 
         // --- Initialization ---
         function init() {
@@ -399,8 +475,12 @@
             
             transformer.addEventListener('dragging-changed', function (event) {
                 orbit.enabled = !event.value;
-                if (!event.value && currentMode === MODES.BUILD) { 
-                    performSnap();
+                if (!event.value) { // Drag ended
+                    if (currentMode === MODES.BUILD) { 
+                        performSnap();
+                    }
+                    // Record history after transform
+                    recordHistory();
                 }
             });
 
@@ -426,10 +506,14 @@
             document.addEventListener('keydown', onKeyDown);
             document.addEventListener('contextmenu', onContextMenu);
             document.addEventListener('click', hideContextMenu);
+            document.addEventListener('click', closeDropdowns);
 
             // UI Setup
             setupUI();
             setupPaintCanvas();
+
+            // Record initial empty state
+            recordHistory();
 
             // Start Loop
             animate();
@@ -448,6 +532,7 @@
             worldAnchor.position.set(0, 0, 0); // Start at origin
             worldAnchor.name = "World_Anchor";
             worldAnchor.userData.isAnchor = true;
+            worldAnchor.visible = false; // Hidden by default
             
             scene.add(worldAnchor);
         }
@@ -514,6 +599,11 @@
             document.getElementById('btn-cancel-fill').addEventListener('click', resetFill);
             
             document.getElementById('btn-anchor').addEventListener('click', () => selectObject(worldAnchor));
+            document.getElementById('btn-toggle-anchor').addEventListener('click', toggleAnchorVisibility);
+            
+            document.getElementById('btn-undo').addEventListener('click', undo);
+            document.getElementById('btn-redo').addEventListener('click', redo);
+
             document.getElementById('btn-export').addEventListener('click', exportGLTF);
             
             document.getElementById('btn-save').addEventListener('click', saveProject);
@@ -522,6 +612,12 @@
 
             document.getElementById('ctx-duplicate').addEventListener('click', duplicateSelected);
             document.getElementById('ctx-delete').addEventListener('click', deleteSelected);
+            
+            // Menu Dropdown Logic
+            document.getElementById('btn-menu').addEventListener('click', (e) => {
+                e.stopPropagation();
+                document.getElementById('menu-dropdown').classList.toggle('show');
+            });
 
             const inputs = document.querySelectorAll('.transform-input');
             inputs.forEach(input => {
@@ -547,26 +643,134 @@
                 });
                 palette.appendChild(el);
             });
-            document.getElementById('btn-clear-paint').addEventListener('click', clearPaintCanvas);
-            document.getElementById('btn-fill-bucket').addEventListener('click', fillPaintCanvas);
+            document.getElementById('btn-clear-paint').addEventListener('click', () => { clearPaintCanvas(); recordHistory(); });
+            document.getElementById('btn-fill-bucket').addEventListener('click', () => { fillPaintCanvas(); recordHistory(); });
+        }
+        
+        function closeDropdowns(e) {
+            if (!e.target.closest('#btn-menu')) {
+                const dropdowns = document.getElementsByClassName("dropdown-content");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const openDropdown = dropdowns[i];
+                    if (openDropdown.classList.contains('show')) {
+                        openDropdown.classList.remove('show');
+                    }
+                }
+            }
         }
 
-        // --- Save / Load System ---
+        // --- Anchor Visibility ---
+        function toggleAnchorVisibility() {
+            worldAnchor.visible = !worldAnchor.visible;
+            const btn = document.getElementById('btn-toggle-anchor');
+            if (worldAnchor.visible) {
+                btn.classList.remove('text-slate-300');
+                btn.classList.add('text-slate-500');
+            } else {
+                btn.classList.add('text-slate-300');
+                btn.classList.remove('text-slate-500');
+                // Deselect if currently selected
+                if (selectedObject === worldAnchor) selectObject(null);
+            }
+        }
+
+        // --- History / Undo / Redo System ---
         
-        function saveProject() {
-            const projectData = objects.map(obj => {
+        function serializeScene() {
+            return objects.map(obj => {
                 return {
                     transform: {
                         position: obj.position.toArray(),
                         rotation: obj.rotation.toArray(),
                         scale: obj.scale.toArray()
                     },
-                    geometryConfig: obj.userData.geometryConfig, // Used to reconstruct geometry
+                    geometryConfig: obj.userData.geometryConfig, 
                     textureData: obj.userData.textureCanvas.toDataURL(),
                     snapPoints: obj.userData.snapPoints.map(p => ({x:p.x, y:p.y, z:p.z}))
                 };
             });
+        }
+
+        function deserializeScene(data) {
+            clearScene(false); // Clear, but don't record history inside
             
+            data.forEach(item => {
+                const conf = item.geometryConfig;
+                let mesh;
+                
+                if (conf.type === 'cardboard') {
+                    const points = conf.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
+                    mesh = createCardboardShape(points, true);
+                } else if (conf.type === 'fill') {
+                    const p1 = new THREE.Vector3(conf.points[0].x, conf.points[0].y, conf.points[0].z);
+                    const p2 = new THREE.Vector3(conf.points[1].x, conf.points[1].y, conf.points[1].z);
+                    const p3 = new THREE.Vector3(conf.points[2].x, conf.points[2].y, conf.points[2].z);
+                    mesh = createFillShape(p1, p2, p3, true);
+                }
+                
+                if (mesh) {
+                    mesh.position.fromArray(item.transform.position);
+                    mesh.rotation.fromArray(item.transform.rotation); 
+                    mesh.scale.fromArray(item.transform.scale);
+                    
+                    const img = new Image();
+                    img.onload = () => {
+                        const ctx = mesh.userData.textureCanvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0);
+                        mesh.material.map.needsUpdate = true;
+                    };
+                    img.src = item.textureData;
+                    
+                    scene.add(mesh);
+                    objects.push(mesh);
+                }
+            });
+        }
+
+        function recordHistory() {
+            // Remove redo history if we are in the middle of the stack
+            if (historyIndex < history.length - 1) {
+                history.splice(historyIndex + 1);
+            }
+            
+            const state = serializeScene();
+            history.push(state);
+            
+            // Limit size
+            if (history.length > MAX_HISTORY + 1) {
+                history.shift();
+            } else {
+                historyIndex++;
+            }
+            
+            updateUndoRedoUI();
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                deserializeScene(history[historyIndex]);
+                updateUndoRedoUI();
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                deserializeScene(history[historyIndex]);
+                updateUndoRedoUI();
+            }
+        }
+
+        function updateUndoRedoUI() {
+            document.getElementById('btn-undo').disabled = historyIndex <= 0;
+            document.getElementById('btn-redo').disabled = historyIndex >= history.length - 1;
+        }
+
+        // --- Save / Load System ---
+        
+        function saveProject() {
+            const projectData = serializeScene();
             const json = JSON.stringify(projectData);
             const blob = new Blob([json], { type: 'application/json' });
             const url = URL.createObjectURL(blob);
@@ -591,42 +795,8 @@
         function loadProject(jsonString) {
             try {
                 const data = JSON.parse(jsonString);
-                clearScene(); // Wipe current
-                
-                data.forEach(item => {
-                    const conf = item.geometryConfig;
-                    let mesh;
-                    
-                    // Reconstruct based on type
-                    if (conf.type === 'cardboard') {
-                        // Reconstruct Points (from array of objects to Vectors)
-                        const points = conf.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-                        // Call creation function, which handles geometry, uv, and initial transform
-                        mesh = createCardboardShape(points, true); // true = return mesh, don't auto-add to scene yet if we want full control
-                    } else if (conf.type === 'fill') {
-                        const p1 = new THREE.Vector3(conf.points[0].x, conf.points[0].y, conf.points[0].z);
-                        const p2 = new THREE.Vector3(conf.points[1].x, conf.points[1].y, conf.points[1].z);
-                        const p3 = new THREE.Vector3(conf.points[2].x, conf.points[2].y, conf.points[2].z);
-                        mesh = createFillShape(p1, p2, p3, true);
-                    }
-                    
-                    if (mesh) {
-                        // Apply Saved Transform (overriding the default creation placement)
-                        mesh.position.fromArray(item.transform.position);
-                        mesh.rotation.fromArray(item.transform.rotation); // order? default is XYZ
-                        mesh.scale.fromArray(item.transform.scale);
-                        
-                        // Restore Texture
-                        const img = new Image();
-                        img.onload = () => {
-                            const ctx = mesh.userData.textureCanvas.getContext('2d');
-                            ctx.drawImage(img, 0, 0);
-                            mesh.material.map.needsUpdate = true;
-                        };
-                        img.src = item.textureData;
-                    }
-                });
-                
+                deserializeScene(data);
+                recordHistory(); // Record the loaded state as a new step
             } catch (err) {
                 console.error("Failed to load project", err);
                 alert("Error loading project file.");
@@ -657,13 +827,20 @@
                 texCtx.fillRect(x, y, 1, 1);
                 
                 selectedObject.material.map.needsUpdate = true;
+                hasPainted = true; // Mark as painted
                 
                 // Update UI canvas
                 ctx.drawImage(textureCanvas, 0, 0, cvs.width, cvs.height);
             };
 
             cvs.addEventListener('mousedown', (e) => { mouseDown = true; paint(e); });
-            window.addEventListener('mouseup', () => { mouseDown = false; });
+            window.addEventListener('mouseup', () => { 
+                mouseDown = false; 
+                if (hasPainted) {
+                    recordHistory();
+                    hasPainted = false;
+                }
+            });
             cvs.addEventListener('mousemove', (e) => { if(mouseDown) paint(e); });
         }
         
@@ -935,7 +1112,9 @@
                 
                 raycaster.setFromCamera(pointer, camera);
                 // Allow selecting objects OR the anchor
-                const intersectables = [...objects, worldAnchor];
+                const intersectables = [...objects];
+                if (worldAnchor.visible) intersectables.push(worldAnchor);
+
                 const intersects = raycaster.intersectObjects(intersectables, false);
                 
                 if (event.button === 0) { 
@@ -1163,6 +1342,7 @@
             resetDrawing();
             switchMode(MODES.BUILD);
             selectObject(mesh);
+            recordHistory();
         }
 
         function resetDrawing() {
@@ -1204,6 +1384,7 @@
                 resetFill();
                 switchMode(MODES.BUILD);
                 selectObject(mesh);
+                recordHistory();
             }
         }
 
@@ -1221,6 +1402,41 @@
             obj.updateMatrixWorld();
             points.forEach(p => p.applyMatrix4(obj.matrixWorld));
             return points;
+        }
+        
+        function disposeObject(obj) {
+            if (!obj) return;
+            
+            // Remove from scene first
+            if (obj.removeFromParent) {
+                 obj.removeFromParent();
+            } else {
+                 scene.remove(obj);
+            }
+
+            // Recursive traversal for children (like edge lines)
+            obj.traverse((child) => {
+                if (child.isMesh || child.isLineSegments || child.isLine) {
+                    // Dispose Geometry
+                    if (child.geometry) {
+                        child.geometry.dispose();
+                    }
+
+                    // Dispose Material
+                    if (child.material) {
+                        // Material can be an array
+                        if (Array.isArray(child.material)) {
+                            child.material.forEach(mat => {
+                                if (mat.map) mat.map.dispose();
+                                mat.dispose();
+                            });
+                        } else {
+                            if (child.material.map) child.material.map.dispose();
+                            child.material.dispose();
+                        }
+                    }
+                }
+            });
         }
         
         // Transform & Context Menu logic...
@@ -1258,28 +1474,43 @@
             scene.add(clone);
             objects.push(clone);
             selectObject(clone);
+            recordHistory();
             hideContextMenu();
         }
 
         function deleteSelected() {
             if (selectedObject && !selectedObject.userData.isAnchor) {
                 transformer.detach();
-                scene.remove(selectedObject);
+                
+                // Remove from internal list
                 objects = objects.filter(o => o !== selectedObject);
+                
+                // Dispose resources and remove from scene
+                disposeObject(selectedObject);
+                
                 selectedObject = null;
+                
+                // UI updates
                 document.getElementById('transform-info').classList.add('hidden');
                 document.getElementById('paint-panel').classList.add('hidden');
+                recordHistory();
                 hideContextMenu();
             }
         }
         
-        function clearScene() {
+        function clearScene(record = true) {
              transformer.detach();
-             objects.forEach(o => scene.remove(o));
+             
+             // Dispose all objects
+             objects.forEach(o => disposeObject(o));
+             
              objects = [];
              selectedObject = null;
+             
+             // UI updates
              document.getElementById('transform-info').classList.add('hidden');
              document.getElementById('paint-panel').classList.add('hidden');
+             if (record) recordHistory();
              hideContextMenu();
         }
 
@@ -1390,6 +1621,16 @@
 
         function onKeyDown(event) {
             if (event.key === 'Delete' || event.key === 'Backspace') deleteSelected();
+            // Undo/Redo Shortcuts
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
+                event.preventDefault();
+                undo();
+            }
+            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'y') {
+                event.preventDefault();
+                redo();
+            }
+            
             if (event.key === 'Escape') {
                 if (currentMode === MODES.DRAW) resetDrawing();
                 else if (currentMode === MODES.FILL) resetFill();
