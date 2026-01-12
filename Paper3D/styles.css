@@ -1,0 +1,190 @@
+/* Base styles */
+body {
+    margin: 0;
+    overflow: hidden;
+    background-color: #e2e8f0;
+    font-family: 'Segoe UI', sans-serif;
+    user-select: none;
+}
+
+#canvas-container {
+    width: 100vw;
+    height: 100vh;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 0;
+}
+
+/* Tool Panel */
+.tool-panel {
+    backdrop-filter: blur(8px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Mode Buttons */
+.mode-btn {
+    transition: all 0.2s;
+}
+
+.mode-btn.active {
+    background-color: #3b82f6;
+    color: white;
+    border-color: #2563eb;
+    box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
+}
+
+/* Guide Overlay */
+.guide-overlay {
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.guide-overlay.visible {
+    opacity: 1;
+}
+
+/* Key Badge */
+.key-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5em;
+    padding: 0 0.4em;
+    border-radius: 4px;
+    background: #e2e8f0;
+    color: #475569;
+    font-family: monospace;
+    font-size: 0.8em;
+    border-bottom: 2px solid #cbd5e1;
+}
+
+/* Transform Input */
+.transform-input {
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    width: 100%;
+    text-align: right;
+    font-family: monospace;
+    font-size: 0.75rem;
+    color: #475569;
+    padding: 2px 4px;
+    transition: all 0.2s;
+}
+
+.transform-input:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+}
+
+.transform-input:focus {
+    outline: none;
+    border-color: #3b82f6;
+    background: #fff;
+    color: #0f172a;
+}
+
+.transform-input::-webkit-inner-spin-button,
+.transform-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* UV Canvas */
+#uv-canvas {
+    image-rendering: pixelated;
+}
+
+/* Color Swatch */
+.color-swatch {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 2px solid rgba(0, 0, 0, 0.1);
+    transition: transform 0.1s;
+}
+
+.color-swatch:hover {
+    transform: scale(1.1);
+}
+
+.color-swatch.active {
+    border-color: #3b82f6;
+    transform: scale(1.1);
+}
+
+/* Dropdown Menu */
+.dropdown-content {
+    display: none;
+    position: absolute;
+    bottom: 100%;
+    left: 0;
+    background-color: white;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+    z-index: 1;
+    border-radius: 8px;
+    padding: 4px 0;
+    margin-bottom: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.dropdown-content button {
+    color: #475569;
+    padding: 8px 16px;
+    text-decoration: none;
+    display: block;
+    width: 100%;
+    text-align: left;
+    font-size: 0.875rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.dropdown-content button:hover {
+    background-color: #f1f5f9;
+}
+
+.dropdown-content.show {
+    display: block;
+}
+
+/* UV Editor Panel */
+#uv-editor-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 100;
+    max-width: 90vw;
+    max-height: 90vh;
+}
+
+#uv-editor-panel.hidden {
+    display: none;
+}
+
+/* UV Island List Item */
+.uv-island-item {
+    cursor: pointer;
+    padding: 6px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.15s;
+}
+
+.uv-island-item:hover {
+    background: #f1f5f9;
+}
+
+.uv-island-item.selected {
+    background: #dbeafe;
+    color: #1d4ed8;
+}

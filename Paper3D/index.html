@@ -5,125 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cardboard Constructor</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #e2e8f0; font-family: 'Segoe UI', sans-serif; user-select: none; }
-        #canvas-container { width: 100vw; height: 100vh; position: absolute; top: 0; left: 0; z-index: 0; }
-        
-        .tool-panel {
-            backdrop-filter: blur(8px);
-            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-        
-        .mode-btn {
-            transition: all 0.2s;
-        }
-        .mode-btn.active {
-            background-color: #3b82f6; 
-            color: white; 
-            border-color: #2563eb;
-            box-shadow: 0 4px 6px -1px rgba(59, 130, 246, 0.5);
-        }
-
-        /* Drawing instruction overlay */
-        .guide-overlay {
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-        }
-        .guide-overlay.visible { opacity: 1; }
-
-        .key-badge {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 1.5em;
-            padding: 0 0.4em;
-            border-radius: 4px;
-            background: #e2e8f0;
-            color: #475569;
-            font-family: monospace;
-            font-size: 0.8em;
-            border-bottom: 2px solid #cbd5e1;
-        }
-
-        /* Input styling for transform panel */
-        .transform-input {
-            background: transparent;
-            border: 1px solid transparent;
-            border-radius: 4px;
-            width: 100%;
-            text-align: right;
-            font-family: monospace;
-            font-size: 0.75rem;
-            color: #475569;
-            padding: 2px 4px;
-            transition: all 0.2s;
-        }
-        .transform-input:hover {
-            border-color: #cbd5e1;
-            background: #f8fafc;
-        }
-        .transform-input:focus {
-            outline: none;
-            border-color: #3b82f6;
-            background: #fff;
-            color: #0f172a;
-        }
-        /* Hide number spinners */
-        .transform-input::-webkit-inner-spin-button, 
-        .transform-input::-webkit-outer-spin-button { 
-            -webkit-appearance: none; 
-            margin: 0; 
-        }
-
-        /* Pixel Editor Canvas */
-        #paint-canvas {
-            image-rendering: pixelated;
-            cursor: crosshair;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-        .color-swatch {
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            cursor: pointer;
-            border: 2px solid rgba(0,0,0,0.1);
-        }
-        .color-swatch.active {
-            border-color: #3b82f6;
-            transform: scale(1.1);
-        }
-
-        /* Dropdown Menu */
-        .dropdown-content {
-            display: none;
-            position: absolute;
-            bottom: 100%;
-            left: 0;
-            background-color: white;
-            min-width: 160px;
-            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
-            z-index: 1;
-            border-radius: 8px;
-            padding: 4px 0;
-            margin-bottom: 8px;
-            border: 1px solid #e2e8f0;
-        }
-        .dropdown-content button {
-            color: #475569;
-            padding: 8px 16px;
-            text-decoration: none;
-            display: block;
-            width: 100%;
-            text-align: left;
-            font-size: 0.875rem;
-        }
-        .dropdown-content button:hover {
-            background-color: #f1f5f9;
-        }
-        .show { display: block; }
-    </style>
-    <!-- Import Map for Three.js -->
+    <link rel="stylesheet" href="styles.css">
     <script type="importmap">
         {
             "imports": {
@@ -158,35 +40,28 @@
         </div>
     </div>
 
-    <!-- Transform Info Panel (Editable) -->
+    <!-- Transform Info Panel -->
     <div id="transform-info" class="absolute bottom-8 right-8 z-10 hidden transition-opacity duration-200">
         <div class="bg-white/90 shadow-lg rounded-xl p-4 border border-slate-200 w-64 font-mono text-xs text-slate-600 backdrop-blur-sm">
             <div class="font-bold text-slate-800 mb-3 uppercase tracking-wider flex justify-between items-center">
                 <span>Transform</span>
                 <span class="text-[10px] text-slate-400">Local</span>
             </div>
-            
             <div class="grid grid-cols-[32px_1fr_1fr_1fr] gap-2 items-center mb-1 text-center text-[10px] text-slate-400">
                 <div></div><div>X</div><div>Y</div><div>Z</div>
             </div>
-
-            <!-- Position -->
             <div class="grid grid-cols-[32px_1fr_1fr_1fr] gap-2 items-center mb-2">
                 <div class="font-bold text-blue-500">POS</div>
                 <input type="number" step="0.1" id="inp-pos-x" class="transform-input">
                 <input type="number" step="0.1" id="inp-pos-y" class="transform-input">
                 <input type="number" step="0.1" id="inp-pos-z" class="transform-input">
             </div>
-            
-            <!-- Rotation -->
             <div class="grid grid-cols-[32px_1fr_1fr_1fr] gap-2 items-center mb-2">
                 <div class="font-bold text-purple-500">ROT</div>
                 <input type="number" step="5" id="inp-rot-x" class="transform-input">
                 <input type="number" step="5" id="inp-rot-y" class="transform-input">
                 <input type="number" step="5" id="inp-rot-z" class="transform-input">
             </div>
-            
-            <!-- Scale -->
             <div class="grid grid-cols-[32px_1fr_1fr_1fr] gap-2 items-center">
                 <div class="font-bold text-emerald-500">SCL</div>
                 <input type="number" step="0.1" id="inp-scl-x" class="transform-input">
@@ -196,22 +71,63 @@
         </div>
     </div>
 
-    <!-- Paint Panel -->
-    <div id="paint-panel" class="absolute top-20 right-8 z-10 hidden flex-col items-end">
-        <div class="bg-white/90 shadow-xl rounded-xl p-4 border border-slate-200 backdrop-blur-sm">
-            <div class="flex justify-between items-center mb-2">
-                <span class="font-bold text-slate-700 text-sm">Pixel Editor</span>
-                <span class="text-[10px] text-slate-400">32x32</span>
+    <!-- UV Editor Modal -->
+    <div id="uv-editor-panel" class="hidden">
+        <div class="bg-white/95 shadow-2xl rounded-2xl border border-slate-200 backdrop-blur-sm overflow-hidden">
+            <div class="flex justify-between items-center px-4 py-3 border-b border-slate-200 bg-slate-50">
+                <div class="flex items-center gap-3">
+                    <span class="font-bold text-slate-700">UV Editor / Texture Atlas</span>
+                    <span class="text-xs text-slate-400 bg-slate-200 px-2 py-0.5 rounded">512×512</span>
+                </div>
+                <button id="btn-close-uv" class="p-1 hover:bg-slate-200 rounded transition">
+                    <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
             </div>
-            <div class="border border-slate-300 rounded overflow-hidden">
-                <canvas id="paint-canvas" width="256" height="256" class="bg-white block"></canvas>
-            </div>
-            <div class="flex gap-2 mt-3 flex-wrap w-64" id="color-palette">
-                <!-- Colors injected via JS -->
-            </div>
-             <div class="flex gap-2 mt-3">
-                 <button id="btn-fill-bucket" class="flex-1 py-1 px-2 text-xs bg-slate-100 hover:bg-slate-200 rounded text-slate-600 font-medium">Fill All</button>
-                 <button id="btn-clear-paint" class="flex-1 py-1 px-2 text-xs bg-red-50 hover:bg-red-100 rounded text-red-600 font-medium">Clear</button>
+            <div class="flex">
+                <div class="p-4 bg-slate-100">
+                    <canvas id="uv-canvas" width="512" height="512" class="bg-white border border-slate-300 rounded cursor-crosshair"></canvas>
+                </div>
+                <div class="w-72 p-4 border-l border-slate-200 flex flex-col gap-4">
+                    <div>
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Tool</div>
+                        <div class="flex gap-2">
+                            <button id="uv-tool-paint" class="flex-1 py-2 px-3 text-xs bg-blue-500 text-white rounded font-medium">Paint</button>
+                            <button id="uv-tool-move" class="flex-1 py-2 px-3 text-xs bg-slate-100 text-slate-600 rounded font-medium">Move Island</button>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Colors</div>
+                        <div class="flex gap-1 flex-wrap" id="uv-color-palette"></div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Brush Size: <span id="brush-label">1</span>px</div>
+                        <input type="range" id="brush-size" min="1" max="16" value="1" class="w-full">
+                    </div>
+                    <div>
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">UV Grid Snap</div>
+                        <select id="uv-grid-snap" class="w-full px-3 py-2 text-sm border border-slate-200 rounded bg-white">
+                            <option value="1">1px (None)</option>
+                            <option value="8">8px</option>
+                            <option value="16" selected>16px</option>
+                            <option value="32">32px</option>
+                        </select>
+                    </div>
+                    <div class="flex-1 overflow-auto">
+                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">UV Islands</div>
+                        <div id="uv-island-list" class="space-y-1"></div>
+                    </div>
+                    <div class="pt-3 border-t border-slate-200 space-y-2">
+                        <div class="flex gap-2">
+                            <button id="btn-export-uv" class="flex-1 py-2 px-3 text-xs bg-emerald-500 text-white rounded font-medium hover:bg-emerald-600">Export UV Guide</button>
+                            <button id="btn-import-uv" class="flex-1 py-2 px-3 text-xs bg-amber-500 text-white rounded font-medium hover:bg-amber-600">Import Texture</button>
+                        </div>
+                        <button id="btn-auto-pack" class="w-full py-2 px-3 text-xs bg-purple-500 text-white rounded font-medium hover:bg-purple-600">Auto-Pack Islands</button>
+                        <div class="flex gap-2">
+                            <button id="btn-fill-island" class="flex-1 py-2 px-3 text-xs bg-slate-100 text-slate-600 rounded font-medium hover:bg-slate-200">Fill Island</button>
+                            <button id="btn-clear-atlas" class="flex-1 py-2 px-3 text-xs bg-red-50 text-red-600 rounded font-medium hover:bg-red-100">Clear All</button>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -228,1431 +144,74 @@
         </button>
     </div>
 
-    <!-- Action Bar (Bottom) -->
+    <!-- Action Bar -->
     <div class="absolute bottom-8 left-0 right-0 z-10 flex justify-center pointer-events-none">
         <div id="action-bar" class="tool-panel bg-white/90 shadow-lg rounded-xl p-2 border border-slate-200 pointer-events-auto flex gap-3 items-center">
-            
-            <!-- Main Build Tools Wrapper -->
             <div id="tools-build" class="flex gap-2 items-center">
                 <input type="file" id="file-input" style="display:none" accept=".json">
-                
-                <!-- File Menu Dropdown -->
+                <input type="file" id="texture-input" style="display:none" accept="image/*">
                 <div class="relative">
                     <button id="btn-menu" class="px-3 py-2 rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 transition font-bold text-xs flex items-center gap-1">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                         Menu
                     </button>
                     <div id="menu-dropdown" class="dropdown-content">
-                        <button id="btn-save" class="flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                            Save JSON
-                        </button>
-                        <button id="btn-load" class="flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-                            Load JSON
-                        </button>
-                        <button id="btn-export" class="flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                            Export GLTF
-                        </button>
+                        <button id="btn-save" class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>Save JSON</button>
+                        <button id="btn-load" class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>Load JSON</button>
+                        <button id="btn-import-tex" class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>Import Texture</button>
+                        <button id="btn-export" class="flex items-center gap-2"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>Export GLTF</button>
                         <div class="border-t border-slate-100 my-1"></div>
-                        <button id="btn-clear" class="flex items-center gap-2 text-red-600 hover:bg-red-50">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                            Clear Scene
-                        </button>
+                        <button id="btn-clear" class="flex items-center gap-2 text-red-600 hover:bg-red-50"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>Clear Scene</button>
                     </div>
                 </div>
-
                 <div class="w-px bg-slate-300 mx-1 h-8"></div>
-                
-                <!-- Undo/Redo Group -->
                 <div class="flex gap-1">
-                    <button id="btn-undo" class="p-2 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 transition disabled:opacity-50 disabled:cursor-not-allowed" title="Undo (Ctrl+Z)">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
-                    </button>
-                    <button id="btn-redo" class="p-2 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 transition disabled:opacity-50 disabled:cursor-not-allowed" title="Redo (Ctrl+Y)">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"></path></svg>
-                    </button>
+                    <button id="btn-undo" class="p-2 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 transition disabled:opacity-50" title="Undo"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg></button>
+                    <button id="btn-redo" class="p-2 rounded-lg bg-slate-50 text-slate-600 hover:bg-slate-100 transition disabled:opacity-50" title="Redo"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10h-10a8 8 0 00-8 8v2M21 10l-6 6m6-6l-6-6"></path></svg></button>
                 </div>
-
                 <div class="w-px bg-slate-300 mx-1 h-8"></div>
-
-                <!-- Tools Group -->
                 <div class="flex gap-1">
-                    <button id="tool-move" class="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition" title="Move (W)">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg>
-                    </button>
-                    <button id="tool-rotate" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition" title="Rotate (E)">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                    </button>
+                    <button id="tool-move" class="p-2 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition" title="Move (W)"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4"></path></svg></button>
+                    <button id="tool-rotate" class="p-2 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition" title="Rotate (E)"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg></button>
                 </div>
-
                 <div class="w-px bg-slate-300 mx-1 h-8"></div>
-                
-                <!-- View/Edit Group -->
                 <div class="flex gap-1">
-                    <button id="btn-anchor" class="p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition" title="Select Origin Anchor">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                    </button>
-                    <!-- Default state text-slate-300 because it starts hidden -->
-                    <button id="btn-toggle-anchor" class="p-2 rounded-lg bg-slate-100 text-slate-300 hover:bg-slate-200 transition" title="Toggle Anchor Visibility">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                    </button>
-                    <button id="btn-delete" class="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition" title="Delete Selected (Del)">
-                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    </button>
+                    <button id="btn-anchor" class="p-2 rounded-lg bg-purple-50 text-purple-600 hover:bg-purple-100 transition" title="Select Anchor"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg></button>
+                    <button id="btn-toggle-anchor" class="p-2 rounded-lg bg-slate-100 text-slate-300 hover:bg-slate-200 transition" title="Toggle Anchor"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
+                    <button id="btn-delete" class="p-2 rounded-lg bg-red-50 text-red-500 hover:bg-red-100 transition" title="Delete (Del)"><svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
                 </div>
-
             </div>
-
-            <!-- Draw Tools (Draw Mode) -->
             <div id="tools-draw" class="hidden flex gap-2 items-center text-sm text-slate-600">
-                <span class="mr-2">Click grid to place points. Click <b>Start Point</b> to close shape.</span>
+                <span class="mr-2">Click grid to place points. Click <b>Start</b> to close.</span>
                 <button id="btn-cancel-draw" class="px-3 py-1 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-bold uppercase">Cancel</button>
             </div>
-            
-            <!-- Fill Tools (Fill Mode) -->
             <div id="tools-fill" class="hidden flex gap-2 items-center text-sm text-slate-600">
-                 <span class="mr-2">Select <b>3 points</b> on existing objects to fill face.</span>
-                 <button id="btn-cancel-fill" class="px-3 py-1 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-bold uppercase">Cancel</button>
+                <span class="mr-2">Click <b>3 vertices</b> on existing shapes.</span>
+                <button id="btn-cancel-fill" class="px-3 py-1 rounded-lg border border-slate-300 hover:bg-slate-50 text-xs font-bold uppercase">Cancel</button>
             </div>
-            
-             <!-- Paint Tools (Paint Mode) -->
             <div id="tools-paint" class="hidden flex gap-2 items-center text-sm text-slate-600">
-                 <span class="mr-2">Select an object to paint.</span>
-                 <span class="text-xs text-slate-400">Use panel on right.</span>
+                <span class="mr-2">Edit texture atlas and UV mapping</span>
+                <button id="btn-open-uv" class="px-3 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 text-xs font-bold">Open UV Editor</button>
             </div>
-            
         </div>
     </div>
 
     <!-- Guide Overlays -->
-    <div id="draw-guide" class="guide-overlay absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 text-center">
-        <div class="bg-black/75 text-white px-6 py-4 rounded-2xl backdrop-blur-sm shadow-2xl">
-            <h2 class="text-xl font-bold mb-2">Drawing Mode</h2>
-            <p class="text-slate-200 text-sm">Draw on the floor grid.</p>
-            <div class="mt-4 flex gap-4 justify-center text-xs text-slate-400">
-                <div class="flex flex-col items-center">
-                    <div class="w-8 h-8 rounded-full border-2 border-white/30 flex items-center justify-center mb-1 bg-blue-500 text-white font-bold">1</div>
-                    <span>Click Points</span>
-                </div>
-                <div class="w-8 h-px bg-white/20 mt-4"></div>
-                <div class="flex flex-col items-center">
-                    <div class="w-8 h-8 rounded-full border-2 border-white/30 flex items-center justify-center mb-1 bg-green-500 text-white font-bold">2</div>
-                    <span>Close Loop</span>
-                </div>
-            </div>
+    <div id="draw-guide" class="guide-overlay fixed bottom-32 left-1/2 transform -translate-x-1/2 z-10">
+        <div class="bg-white/90 shadow-md rounded-lg px-4 py-2 text-sm text-slate-600 border border-slate-200 backdrop-blur-sm flex items-center gap-3">
+            <span>Click on grid to start drawing</span>
+            <span class="key-badge">ESC</span><span class="text-slate-400">to cancel</span>
         </div>
     </div>
-    
-    <div id="fill-guide" class="guide-overlay absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-20 text-center">
-        <div class="bg-black/75 text-white px-6 py-4 rounded-2xl backdrop-blur-sm shadow-2xl">
-            <h2 class="text-xl font-bold mb-2">Fill Mode</h2>
-            <p class="text-slate-200 text-sm">Create a triangle by snapping to 3 points.</p>
-            <div class="mt-4 flex gap-2 justify-center text-xs text-slate-400">
-                <span class="bg-white/10 px-2 py-1 rounded">Point 1</span>
-                <span class="text-white/30">→</span>
-                <span class="bg-white/10 px-2 py-1 rounded">Point 2</span>
-                <span class="text-white/30">→</span>
-                <span class="bg-white/10 px-2 py-1 rounded">Point 3</span>
-            </div>
+    <div id="fill-guide" class="guide-overlay fixed bottom-32 left-1/2 transform -translate-x-1/2 z-10">
+        <div class="bg-white/90 shadow-md rounded-lg px-4 py-2 text-sm text-slate-600 border border-slate-200 backdrop-blur-sm flex items-center gap-3">
+            <span>Click vertices on existing shapes</span>
+            <span class="key-badge">ESC</span><span class="text-slate-400">to cancel</span>
         </div>
     </div>
 
     <div id="canvas-container"></div>
 
-    <script type="module">
-        import * as THREE from 'three';
-        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
-        import { TransformControls } from 'three/addons/controls/TransformControls.js';
-        import { GLTFExporter } from 'three/addons/exporters/GLTFExporter.js';
-
-        // --- Configuration ---
-        const CONF = {
-            gridSize: 20,
-            gridDivisions: 20, 
-            snapUnit: 1.0, 
-            rotationSnap: 5 * (Math.PI / 180),
-            bgColor: 0xe2e8f0,
-            drawColor: 0x3b82f6,
-            drawLineColor: 0x2563eb,
-            colors: ['#ffffff', '#ffadad', '#ffd6a5', '#fdffb6', '#caffbf', '#9bf6ff', '#a0c4ff', '#bdb2ff', '#ffc6ff', '#555555', '#000000'],
-            texSize: 32 // Pixel art resolution
-        };
-
-        const MODES = { BUILD: 'build', DRAW: 'draw', FILL: 'fill', PAINT: 'paint' };
-        let currentMode = MODES.BUILD;
-
-        // --- Core Globals ---
-        let scene, camera, renderer;
-        let orbit, transformer;
-        let raycaster, pointer;
-        let gridHelper;
-        
-        // Camera State
-        const savedCameraPos = new THREE.Vector3(10, 10, 10);
-        const savedTarget = new THREE.Vector3(0, 0, 0);
-        
-        // --- Tool State ---
-        let drawPoints = [];
-        let drawLineMesh = null;
-        let drawCursorMesh = null;
-        let drawStartMarker = null;
-        let isDrawing = false;
-        
-        // --- Scene State ---
-        let objects = []; 
-        let selectedObject = null;
-        let worldAnchor = null; // The origin marker
-
-        // --- Snapping ---
-        let snapLine = null;
-        const SNAP_THRESHOLD = 1.0; 
-
-        // --- Fill Mode ---
-        let fillPoints = []; 
-        let fillMarkerMesh = null; 
-        let fillSelectedMarkers = [];
-
-        // --- Paint Mode ---
-        let paintColor = '#000000';
-        let isPainting = false;
-        let hasPainted = false; // Track if painting occurred during mouse press
-
-        // --- Undo/Redo State ---
-        const MAX_HISTORY = 10;
-        const history = [];
-        let historyIndex = -1;
-
-        // --- Initialization ---
-        function init() {
-            const container = document.getElementById('canvas-container');
-
-            // Scene
-            scene = new THREE.Scene();
-            scene.background = new THREE.Color(CONF.bgColor);
-            scene.fog = new THREE.Fog(CONF.bgColor, 15, 50);
-
-            // Camera
-            camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
-            camera.position.set(10, 10, 10);
-            camera.lookAt(0, 0, 0);
-
-            // Renderer
-            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: true });
-            renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(window.devicePixelRatio);
-            renderer.shadowMap.enabled = true;
-            renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-            container.appendChild(renderer.domElement);
-
-            // Lights
-            const ambientLight = new THREE.AmbientLight(0xffffff, 0.7);
-            scene.add(ambientLight);
-            const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
-            dirLight.position.set(5, 15, 10);
-            dirLight.castShadow = true;
-            dirLight.shadow.mapSize.width = 2048;
-            dirLight.shadow.mapSize.height = 2048;
-            scene.add(dirLight);
-
-            // Grid
-            gridHelper = new THREE.GridHelper(CONF.gridSize, CONF.gridDivisions, 0x94a3b8, 0xcbd5e1);
-            scene.add(gridHelper);
-
-            // World Anchor (Origin)
-            createWorldAnchor();
-
-            // Controls
-            orbit = new OrbitControls(camera, renderer.domElement);
-            orbit.enableDamping = true;
-            orbit.dampingFactor = 0.05;
-            orbit.maxPolarAngle = Math.PI / 2 - 0.05; 
-
-            transformer = new TransformControls(camera, renderer.domElement);
-            transformer.setTranslationSnap(CONF.snapUnit);
-            transformer.setRotationSnap(CONF.rotationSnap);
-            
-            transformer.addEventListener('dragging-changed', function (event) {
-                orbit.enabled = !event.value;
-                if (!event.value) { // Drag ended
-                    if (currentMode === MODES.BUILD) { 
-                        performSnap();
-                    }
-                    // Record history after transform
-                    recordHistory();
-                }
-            });
-
-            transformer.addEventListener('change', function () {
-                if (transformer.dragging && currentMode === MODES.BUILD) {
-                    previewSnap();
-                    updateTransformUI();
-                }
-            });
-            scene.add(transformer);
-
-            // Raycaster
-            raycaster = new THREE.Raycaster();
-            pointer = new THREE.Vector2();
-
-            // Helpers
-            setupHelpers();
-
-            // Event Listeners
-            window.addEventListener('resize', onWindowResize);
-            document.addEventListener('pointermove', onPointerMove);
-            document.addEventListener('pointerdown', onPointerDown);
-            document.addEventListener('keydown', onKeyDown);
-            document.addEventListener('contextmenu', onContextMenu);
-            document.addEventListener('click', hideContextMenu);
-            document.addEventListener('click', closeDropdowns);
-
-            // UI Setup
-            setupUI();
-            setupPaintCanvas();
-
-            // Record initial empty state
-            recordHistory();
-
-            // Start Loop
-            animate();
-        }
-
-        function createWorldAnchor() {
-            // A simple axis helper that acts as the world root for export
-            const axes = new THREE.AxesHelper(2);
-            // Add a base to make it selectable
-            const baseGeo = new THREE.BoxGeometry(0.5, 0.1, 0.5);
-            const baseMat = new THREE.MeshBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.5 });
-            const base = new THREE.Mesh(baseGeo, baseMat);
-            axes.add(base);
-            
-            worldAnchor = axes;
-            worldAnchor.position.set(0, 0, 0); // Start at origin
-            worldAnchor.name = "World_Anchor";
-            worldAnchor.userData.isAnchor = true;
-            worldAnchor.visible = false; // Hidden by default
-            
-            scene.add(worldAnchor);
-        }
-
-        function setupHelpers() {
-            // Draw Line
-            const geometry = new THREE.BufferGeometry();
-            const material = new THREE.LineBasicMaterial({ color: CONF.drawLineColor, linewidth: 2 });
-            drawLineMesh = new THREE.Line(geometry, material);
-            drawLineMesh.frustumCulled = false;
-            scene.add(drawLineMesh);
-
-            // Draw Cursor
-            const cursorGeo = new THREE.RingGeometry(0.1, 0.2, 16);
-            cursorGeo.rotateX(-Math.PI / 2);
-            const cursorMat = new THREE.MeshBasicMaterial({ color: CONF.drawLineColor, side: THREE.DoubleSide });
-            drawCursorMesh = new THREE.Mesh(cursorGeo, cursorMat);
-            drawCursorMesh.visible = false;
-            scene.add(drawCursorMesh);
-
-            // Start Marker
-            const startGeo = new THREE.CircleGeometry(0.25, 16);
-            startGeo.rotateX(-Math.PI/2);
-            const startMat = new THREE.MeshBasicMaterial({ color: 0x10b981, transparent: true, opacity: 0.8 });
-            drawStartMarker = new THREE.Mesh(startGeo, startMat);
-            drawStartMarker.visible = false;
-            drawStartMarker.position.y = 0.02;
-            scene.add(drawStartMarker);
-
-            // Snap Line
-            const snapGeo = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3()]);
-            const snapMat = new THREE.LineBasicMaterial({ color: 0x39ff14, linewidth: 3, depthTest: false, opacity: 0.8, transparent: true });
-            snapLine = new THREE.Line(snapGeo, snapMat);
-            snapLine.renderOrder = 999;
-            snapLine.visible = false;
-            scene.add(snapLine);
-
-            // Fill Marker
-            const fillMarkerGeo = new THREE.SphereGeometry(0.15, 16, 16);
-            const fillMarkerMat = new THREE.MeshBasicMaterial({ color: 0xff00ff, transparent: true, opacity: 0.8, depthTest: false });
-            fillMarkerMesh = new THREE.Mesh(fillMarkerGeo, fillMarkerMat);
-            fillMarkerMesh.renderOrder = 999;
-            fillMarkerMesh.visible = false;
-            scene.add(fillMarkerMesh);
-        }
-
-        function setupUI() {
-            const btnDraw = document.getElementById('mode-draw');
-            const btnBuild = document.getElementById('mode-build');
-            const btnFill = document.getElementById('mode-fill');
-            const btnPaint = document.getElementById('mode-paint');
-
-            btnDraw.addEventListener('click', () => switchMode(MODES.DRAW));
-            btnBuild.addEventListener('click', () => switchMode(MODES.BUILD));
-            btnFill.addEventListener('click', () => switchMode(MODES.FILL));
-            btnPaint.addEventListener('click', () => switchMode(MODES.PAINT));
-
-            document.getElementById('tool-move').addEventListener('click', () => transformer.setMode('translate'));
-            document.getElementById('tool-rotate').addEventListener('click', () => transformer.setMode('rotate'));
-            
-            document.getElementById('btn-delete').addEventListener('click', deleteSelected);
-            document.getElementById('btn-clear').addEventListener('click', clearScene);
-            document.getElementById('btn-cancel-draw').addEventListener('click', resetDrawing);
-            document.getElementById('btn-cancel-fill').addEventListener('click', resetFill);
-            
-            document.getElementById('btn-anchor').addEventListener('click', () => selectObject(worldAnchor));
-            document.getElementById('btn-toggle-anchor').addEventListener('click', toggleAnchorVisibility);
-            
-            document.getElementById('btn-undo').addEventListener('click', undo);
-            document.getElementById('btn-redo').addEventListener('click', redo);
-
-            document.getElementById('btn-export').addEventListener('click', exportGLTF);
-            
-            document.getElementById('btn-save').addEventListener('click', saveProject);
-            document.getElementById('btn-load').addEventListener('click', () => document.getElementById('file-input').click());
-            document.getElementById('file-input').addEventListener('change', handleFileSelect);
-
-            document.getElementById('ctx-duplicate').addEventListener('click', duplicateSelected);
-            document.getElementById('ctx-delete').addEventListener('click', deleteSelected);
-            
-            // Menu Dropdown Logic
-            document.getElementById('btn-menu').addEventListener('click', (e) => {
-                e.stopPropagation();
-                document.getElementById('menu-dropdown').classList.toggle('show');
-            });
-
-            const inputs = document.querySelectorAll('.transform-input');
-            inputs.forEach(input => {
-                input.addEventListener('change', applyTransformFromUI);
-                input.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter') {
-                        applyTransformFromUI();
-                        input.blur();
-                    }
-                });
-            });
-
-            // Paint Palette
-            const palette = document.getElementById('color-palette');
-            CONF.colors.forEach((color, i) => {
-                const el = document.createElement('div');
-                el.className = `color-swatch ${i===10 ? 'active' : ''}`;
-                el.style.backgroundColor = color;
-                el.addEventListener('click', () => {
-                    document.querySelectorAll('.color-swatch').forEach(s => s.classList.remove('active'));
-                    el.classList.add('active');
-                    paintColor = color;
-                });
-                palette.appendChild(el);
-            });
-            document.getElementById('btn-clear-paint').addEventListener('click', () => { clearPaintCanvas(); recordHistory(); });
-            document.getElementById('btn-fill-bucket').addEventListener('click', () => { fillPaintCanvas(); recordHistory(); });
-        }
-        
-        function closeDropdowns(e) {
-            if (!e.target.closest('#btn-menu')) {
-                const dropdowns = document.getElementsByClassName("dropdown-content");
-                for (let i = 0; i < dropdowns.length; i++) {
-                    const openDropdown = dropdowns[i];
-                    if (openDropdown.classList.contains('show')) {
-                        openDropdown.classList.remove('show');
-                    }
-                }
-            }
-        }
-
-        // --- Anchor Visibility ---
-        function toggleAnchorVisibility() {
-            worldAnchor.visible = !worldAnchor.visible;
-            const btn = document.getElementById('btn-toggle-anchor');
-            if (worldAnchor.visible) {
-                btn.classList.remove('text-slate-300');
-                btn.classList.add('text-slate-500');
-            } else {
-                btn.classList.add('text-slate-300');
-                btn.classList.remove('text-slate-500');
-                // Deselect if currently selected
-                if (selectedObject === worldAnchor) selectObject(null);
-            }
-        }
-
-        // --- History / Undo / Redo System ---
-        
-        function serializeScene() {
-            return objects.map(obj => {
-                return {
-                    transform: {
-                        position: obj.position.toArray(),
-                        rotation: obj.rotation.toArray(),
-                        scale: obj.scale.toArray()
-                    },
-                    geometryConfig: obj.userData.geometryConfig, 
-                    textureData: obj.userData.textureCanvas.toDataURL(),
-                    snapPoints: obj.userData.snapPoints.map(p => ({x:p.x, y:p.y, z:p.z}))
-                };
-            });
-        }
-
-        function deserializeScene(data) {
-            clearScene(false); // Clear, but don't record history inside
-            
-            data.forEach(item => {
-                const conf = item.geometryConfig;
-                let mesh;
-                
-                if (conf.type === 'cardboard') {
-                    const points = conf.points.map(p => new THREE.Vector3(p.x, p.y, p.z));
-                    mesh = createCardboardShape(points, true);
-                } else if (conf.type === 'fill') {
-                    const p1 = new THREE.Vector3(conf.points[0].x, conf.points[0].y, conf.points[0].z);
-                    const p2 = new THREE.Vector3(conf.points[1].x, conf.points[1].y, conf.points[1].z);
-                    const p3 = new THREE.Vector3(conf.points[2].x, conf.points[2].y, conf.points[2].z);
-                    mesh = createFillShape(p1, p2, p3, true);
-                }
-                
-                if (mesh) {
-                    mesh.position.fromArray(item.transform.position);
-                    mesh.rotation.fromArray(item.transform.rotation); 
-                    mesh.scale.fromArray(item.transform.scale);
-                    
-                    const img = new Image();
-                    img.onload = () => {
-                        const ctx = mesh.userData.textureCanvas.getContext('2d');
-                        ctx.drawImage(img, 0, 0);
-                        mesh.material.map.needsUpdate = true;
-                    };
-                    img.src = item.textureData;
-                    
-                    scene.add(mesh);
-                    objects.push(mesh);
-                }
-            });
-        }
-
-        function recordHistory() {
-            // Remove redo history if we are in the middle of the stack
-            if (historyIndex < history.length - 1) {
-                history.splice(historyIndex + 1);
-            }
-            
-            const state = serializeScene();
-            history.push(state);
-            
-            // Limit size
-            if (history.length > MAX_HISTORY + 1) {
-                history.shift();
-            } else {
-                historyIndex++;
-            }
-            
-            updateUndoRedoUI();
-        }
-
-        function undo() {
-            if (historyIndex > 0) {
-                historyIndex--;
-                deserializeScene(history[historyIndex]);
-                updateUndoRedoUI();
-            }
-        }
-
-        function redo() {
-            if (historyIndex < history.length - 1) {
-                historyIndex++;
-                deserializeScene(history[historyIndex]);
-                updateUndoRedoUI();
-            }
-        }
-
-        function updateUndoRedoUI() {
-            document.getElementById('btn-undo').disabled = historyIndex <= 0;
-            document.getElementById('btn-redo').disabled = historyIndex >= history.length - 1;
-        }
-
-        // --- Save / Load System ---
-        
-        function saveProject() {
-            const projectData = serializeScene();
-            const json = JSON.stringify(projectData);
-            const blob = new Blob([json], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.style.display = 'none';
-            link.href = url;
-            link.download = 'cardboard_project.json';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function handleFileSelect(event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (e) => loadProject(e.target.result);
-            reader.readAsText(file);
-            event.target.value = ''; // Reset input
-        }
-
-        function loadProject(jsonString) {
-            try {
-                const data = JSON.parse(jsonString);
-                deserializeScene(data);
-                recordHistory(); // Record the loaded state as a new step
-            } catch (err) {
-                console.error("Failed to load project", err);
-                alert("Error loading project file.");
-            }
-        }
-
-        // --- Paint Logic ---
-        function setupPaintCanvas() {
-            const cvs = document.getElementById('paint-canvas');
-            const ctx = cvs.getContext('2d');
-            ctx.imageSmoothingEnabled = false;
-
-            // Mouse handling for drawing
-            let mouseDown = false;
-
-            const paint = (e) => {
-                if (!selectedObject || selectedObject.userData.isAnchor) return;
-                
-                // Map mouse to canvas pixel
-                const rect = cvs.getBoundingClientRect();
-                const x = Math.floor((e.clientX - rect.left) / rect.width * CONF.texSize);
-                const y = Math.floor((e.clientY - rect.top) / rect.height * CONF.texSize);
-                
-                const textureCanvas = selectedObject.userData.textureCanvas;
-                const texCtx = textureCanvas.getContext('2d');
-                
-                texCtx.fillStyle = paintColor;
-                texCtx.fillRect(x, y, 1, 1);
-                
-                selectedObject.material.map.needsUpdate = true;
-                hasPainted = true; // Mark as painted
-                
-                // Update UI canvas
-                ctx.drawImage(textureCanvas, 0, 0, cvs.width, cvs.height);
-            };
-
-            cvs.addEventListener('mousedown', (e) => { mouseDown = true; paint(e); });
-            window.addEventListener('mouseup', () => { 
-                mouseDown = false; 
-                if (hasPainted) {
-                    recordHistory();
-                    hasPainted = false;
-                }
-            });
-            cvs.addEventListener('mousemove', (e) => { if(mouseDown) paint(e); });
-        }
-        
-        function updatePaintPanel() {
-             const cvs = document.getElementById('paint-canvas');
-             const ctx = cvs.getContext('2d');
-             ctx.imageSmoothingEnabled = false;
-             
-             if (selectedObject && selectedObject.userData.textureCanvas) {
-                 ctx.drawImage(selectedObject.userData.textureCanvas, 0, 0, cvs.width, cvs.height);
-                 document.getElementById('paint-panel').classList.remove('hidden');
-                 document.getElementById('paint-panel').classList.add('flex');
-             } else {
-                 document.getElementById('paint-panel').classList.add('hidden');
-                 document.getElementById('paint-panel').classList.remove('flex');
-             }
-        }
-        
-        function clearPaintCanvas() {
-             if (!selectedObject || !selectedObject.userData.textureCanvas) return;
-             const texCanvas = selectedObject.userData.textureCanvas;
-             const ctx = texCanvas.getContext('2d');
-             ctx.fillStyle = '#ffffff';
-             ctx.fillRect(0,0, CONF.texSize, CONF.texSize);
-             selectedObject.material.map.needsUpdate = true;
-             updatePaintPanel();
-        }
-        
-        function fillPaintCanvas() {
-             if (!selectedObject || !selectedObject.userData.textureCanvas) return;
-             const texCanvas = selectedObject.userData.textureCanvas;
-             const ctx = texCanvas.getContext('2d');
-             ctx.fillStyle = paintColor;
-             ctx.fillRect(0,0, CONF.texSize, CONF.texSize);
-             selectedObject.material.map.needsUpdate = true;
-             updatePaintPanel();
-        }
-
-        // --- Mode Switching ---
-
-        function switchMode(mode) {
-            if (currentMode === mode) return;
-
-            // Camera Transitions
-            if (mode === MODES.DRAW && currentMode !== MODES.DRAW) {
-                savedCameraPos.copy(camera.position);
-                savedTarget.copy(orbit.target);
-                camera.position.set(0, 25, 0); 
-                orbit.target.set(0, 0, 0);
-                orbit.enableRotate = false; 
-                orbit.update();
-                gridHelper.material.opacity = 1;
-                gridHelper.material.transparent = false;
-            } 
-            else if (mode !== MODES.DRAW && currentMode === MODES.DRAW) {
-                camera.position.copy(savedCameraPos);
-                orbit.target.copy(savedTarget);
-                orbit.enableRotate = true; 
-                orbit.update();
-            }
-
-            currentMode = mode;
-            
-            // UI Classes
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            document.getElementById('mode-' + mode).classList.add('active');
-
-            ['build', 'draw', 'fill', 'paint'].forEach(m => {
-                 const el = document.getElementById('tools-' + m);
-                 if (el) {
-                     el.classList.add('hidden');
-                     el.classList.remove('flex');
-                 }
-            });
-            const activeTool = document.getElementById('tools-' + mode);
-            if(activeTool) {
-                activeTool.classList.remove('hidden');
-                activeTool.classList.add('flex');
-            }
-
-            // State Reset
-            transformer.detach();
-            selectedObject = null;
-            document.getElementById('transform-info').classList.add('hidden');
-            document.getElementById('paint-panel').classList.add('hidden');
-            document.getElementById('paint-panel').classList.remove('flex');
-            
-            resetDrawing();
-            resetFill();
-            
-            document.getElementById('draw-guide').classList.remove('visible');
-            document.getElementById('fill-guide').classList.remove('visible');
-
-            if (mode === MODES.DRAW) {
-                document.getElementById('draw-guide').classList.add('visible');
-            } else if (mode === MODES.FILL) {
-                document.getElementById('fill-guide').classList.add('visible');
-            }
-        }
-
-        // --- Auto UV Generation ---
-        function generateUVs(geometry) {
-            geometry.computeBoundingBox();
-            const min = geometry.boundingBox.min;
-            const max = geometry.boundingBox.max;
-            const range = new THREE.Vector3().subVectors(max, min);
-            
-            const uvAttribute = geometry.attributes.uv;
-            const posAttribute = geometry.attributes.position;
-            const uvs = [];
-            
-            for (let i = 0; i < posAttribute.count; i++) {
-                const x = posAttribute.getX(i);
-                const y = posAttribute.getY(i); 
-                const u = (x - min.x) / range.x;
-                const v = (y - min.y) / range.y;
-                uvs.push(u, v);
-            }
-            
-            geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-        }
-        
-        function createTexture() {
-            const canvas = document.createElement('canvas');
-            canvas.width = CONF.texSize;
-            canvas.height = CONF.texSize;
-            const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#ffffff'; 
-            ctx.fillRect(0, 0, CONF.texSize, CONF.texSize);
-            
-            const tex = new THREE.CanvasTexture(canvas);
-            tex.magFilter = THREE.NearestFilter; 
-            tex.minFilter = THREE.NearestFilter;
-            tex.colorSpace = THREE.SRGBColorSpace;
-            
-            return { texture: tex, canvas: canvas };
-        }
-
-        // --- Object Creation ---
-
-        function createCardboardShape(points, returnOnly = false) {
-            const shape = new THREE.Shape();
-            shape.moveTo(points[0].x, points[0].z);
-            for (let i = 1; i < points.length; i++) {
-                shape.lineTo(points[i].x, points[i].z);
-            }
-            shape.closePath();
-
-            const geometry = new THREE.ShapeGeometry(shape);
-            geometry.computeBoundingBox();
-            const center = new THREE.Vector3();
-            geometry.boundingBox.getCenter(center);
-            geometry.translate(-center.x, -center.y, -center.z); 
-            
-            generateUVs(geometry);
-            
-            geometry.rotateX(Math.PI / 2); 
-            
-            const { texture, canvas } = createTexture();
-            
-            const material = new THREE.MeshStandardMaterial({ 
-                map: texture,
-                roughness: 0.8,
-                metalness: 0.1,
-                side: THREE.DoubleSide
-            });
-
-            const mesh = new THREE.Mesh(geometry, material);
-            mesh.position.set(center.x, 0.05, center.y); 
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            
-            // Store Metadata
-            mesh.userData.textureCanvas = canvas; 
-            // Store construction info for Saving
-            mesh.userData.geometryConfig = {
-                type: 'cardboard',
-                points: points.map(p => ({x:p.x, y:p.y, z:p.z}))
-            };
-
-            const localSnapPoints = [];
-            points.forEach(p => {
-                const vec = new THREE.Vector3(p.x - center.x, p.z - center.y, 0); 
-                vec.applyAxisAngle(new THREE.Vector3(1,0,0), Math.PI/2);
-                localSnapPoints.push(vec);
-            });
-            mesh.userData.snapPoints = localSnapPoints;
-
-            const edges = new THREE.EdgesGeometry(geometry);
-            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.3, transparent: true }));
-            mesh.add(line);
-
-            if (!returnOnly) {
-                scene.add(mesh);
-                objects.push(mesh);
-            }
-            return mesh;
-        }
-        
-        function createFillShape(p1, p2, p3, returnOnly = false) {
-            const center = new THREE.Vector3().addVectors(p1, p2).add(p3).divideScalar(3);
-            const forward = new THREE.Vector3().subVectors(p2, p1).normalize();
-            const temp = new THREE.Vector3().subVectors(p3, p1).normalize();
-            const normal = new THREE.Vector3().crossVectors(forward, temp).normalize();
-            const up = new THREE.Vector3().crossVectors(normal, forward).normalize();
-            
-            const matrix = new THREE.Matrix4().makeBasis(forward, up, normal);
-            matrix.setPosition(center);
-            const inverse = matrix.clone().invert();
-            
-            const l1 = p1.clone().applyMatrix4(inverse);
-            const l2 = p2.clone().applyMatrix4(inverse);
-            const l3 = p3.clone().applyMatrix4(inverse);
-
-            const shape = new THREE.Shape();
-            shape.moveTo(l1.x, l1.y);
-            shape.lineTo(l2.x, l2.y);
-            shape.lineTo(l3.x, l3.y);
-            shape.closePath();
-
-            const geometry = new THREE.ShapeGeometry(shape);
-            generateUVs(geometry); 
-            
-            const { texture, canvas } = createTexture();
-            const material = new THREE.MeshStandardMaterial({ map: texture, roughness: 0.8, metalness: 0.1, side: THREE.DoubleSide });
-
-            const mesh = new THREE.Mesh(geometry, material);
-            mesh.position.copy(center);
-            mesh.quaternion.setFromRotationMatrix(matrix);
-            mesh.castShadow = true;
-            mesh.receiveShadow = true;
-            mesh.userData.snapPoints = [l1, l2, l3];
-            mesh.userData.textureCanvas = canvas;
-            // Store construction info
-            mesh.userData.geometryConfig = {
-                type: 'fill',
-                points: [p1, p2, p3].map(p => ({x:p.x, y:p.y, z:p.z}))
-            };
-
-            const edges = new THREE.EdgesGeometry(geometry);
-            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.3, transparent: true }));
-            mesh.add(line);
-
-            if (!returnOnly) {
-                scene.add(mesh);
-                objects.push(mesh);
-            }
-            return mesh;
-        }
-
-        // --- Interaction Logic ---
-
-        function onPointerDown(event) {
-            if (event.target.closest('button') || event.target.closest('.tool-panel') || event.target.closest('#transform-info') || event.target.closest('#paint-panel')) return;
-
-            if (currentMode === MODES.DRAW) {
-                if (event.button === 0) {
-                    const snapPt = getSnappedPointer();
-                    if (snapPt) handleDrawClick(snapPt);
-                }
-            } else if (currentMode === MODES.FILL) {
-                if (event.button === 0) {
-                    const snapPt = getVertexSnapPointer();
-                    if (snapPt) handleFillClick(snapPt);
-                }
-            } else {
-                // Build or Paint mode selection
-                if (transformer.dragging) return;
-                
-                raycaster.setFromCamera(pointer, camera);
-                // Allow selecting objects OR the anchor
-                const intersectables = [...objects];
-                if (worldAnchor.visible) intersectables.push(worldAnchor);
-
-                const intersects = raycaster.intersectObjects(intersectables, false);
-                
-                if (event.button === 0) { 
-                    if (intersects.length > 0) selectObject(intersects[0].object);
-                    else selectObject(null);
-                }
-            }
-        }
-        
-        function selectObject(obj) {
-            selectedObject = obj;
-            const infoPanel = document.getElementById('transform-info');
-            
-            // Only attach gizmo if build mode
-            if (currentMode === MODES.BUILD) {
-                 if (obj) {
-                    transformer.attach(obj);
-                    infoPanel.classList.remove('hidden');
-                    updateTransformUI();
-                } else {
-                    transformer.detach();
-                    infoPanel.classList.add('hidden');
-                }
-            } else if (currentMode === MODES.PAINT) {
-                transformer.detach();
-                infoPanel.classList.add('hidden');
-                updatePaintPanel();
-            }
-        }
-
-        // --- Export Logic ---
-
-        function exportGLTF() {
-            const exporter = new GLTFExporter();
-            const anchorPos = worldAnchor.position.clone();
-            const exportScene = new THREE.Scene();
-
-            objects.forEach(obj => {
-                const clone = obj.clone();
-                clone.position.sub(anchorPos);
-
-                // Generate High-Res Texture with Guidelines
-                if (obj.userData.textureCanvas && obj.userData.snapPoints && obj.userData.geometryConfig) {
-                    const highResCanvas = document.createElement('canvas');
-                    highResCanvas.width = 1024;
-                    highResCanvas.height = 1024;
-                    const ctx = highResCanvas.getContext('2d');
-                    
-                    // 1. Draw Pixel Art (Scaled)
-                    ctx.imageSmoothingEnabled = false;
-                    ctx.drawImage(obj.userData.textureCanvas, 0, 0, 1024, 1024);
-                    
-                    // 2. Draw Outlines
-                    drawOutlinesOnCanvas(ctx, obj, 1024, 1024);
-                    
-                    // 3. Create new material
-                    const newTex = new THREE.CanvasTexture(highResCanvas);
-                    newTex.colorSpace = THREE.SRGBColorSpace;
-                    // CanvasTexture maps (0,0) to Bottom-Left UV by default (if flipY is true, which it is)
-                    
-                    const newMat = obj.material.clone();
-                    newMat.map = newTex;
-                    clone.material = newMat;
-                }
-
-                exportScene.add(clone);
-            });
-            
-            exporter.parse(
-                exportScene,
-                function (gltf) {
-                    const output = JSON.stringify(gltf, null, 2);
-                    const blob = new Blob([output], { type: 'text/plain' });
-                    const url = URL.createObjectURL(blob);
-                    const link = document.createElement('a');
-                    link.style.display = 'none';
-                    link.href = url;
-                    link.download = 'cardboard_model.gltf';
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                },
-                function (error) {
-                    console.error('An error happened during export:', error);
-                    alert("Export failed. See console.");
-                },
-                { binary: false } 
-            );
-        }
-
-        function drawOutlinesOnCanvas(ctx, mesh, w, h) {
-            const snapPoints = mesh.userData.snapPoints;
-            if (!snapPoints || snapPoints.length === 0) return;
-
-            // 1. Calculate Geometry Space Points
-            // cardboard: x=p.x, y=p.z (rotated X 90 puts z->y)
-            // fill: x=p.x, y=p.y (not rotated)
-            const type = mesh.userData.geometryConfig.type;
-            const points = snapPoints.map(p => {
-                if (type === 'cardboard') return { x: p.x, y: p.z }; // Local Z corresponds to Geometry Y
-                return { x: p.x, y: p.y }; // Local Y corresponds to Geometry Y
-            });
-
-            // 2. Compute Bounds (matches generateUVs logic)
-            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
-            points.forEach(p => {
-                if (p.x < minX) minX = p.x;
-                if (p.y < minY) minY = p.y;
-                if (p.x > maxX) maxX = p.x;
-                if (p.y > maxY) maxY = p.y;
-            });
-            const rangeX = maxX - minX;
-            const rangeY = maxY - minY;
-
-            // 3. Draw Path
-            ctx.beginPath();
-            ctx.lineWidth = 4; // Bold line for 1024px
-            ctx.strokeStyle = '#000000';
-            ctx.lineJoin = 'round';
-            
-            points.forEach((p, i) => {
-                // UV Mapping
-                const u = (p.x - minX) / rangeX;
-                const v = (p.y - minY) / rangeY;
-                
-                // Canvas Coordinate Mapping
-                // UV (0,0) is bottom-left of texture
-                // Canvas (0,0) is top-left
-                // So V maps to (1-v) * height
-                const cx = u * w;
-                const cy = (1 - v) * h;
-
-                if (i === 0) ctx.moveTo(cx, cy);
-                else ctx.lineTo(cx, cy);
-            });
-            
-            ctx.closePath();
-            ctx.stroke();
-        }
-
-        // --- Helper Logic (Draw/Fill/Snap) kept same as previous versions ---
-
-        function updateDrawingVisuals(currentPoint) {
-            if (!isDrawing && drawPoints.length === 0) return;
-
-            const points = [...drawPoints];
-            if (currentPoint) points.push(currentPoint);
-
-            drawLineMesh.geometry.setFromPoints(points);
-            drawLineMesh.visible = true;
-
-            if (drawPoints.length > 0) {
-                drawStartMarker.position.copy(drawPoints[0]);
-                drawStartMarker.position.y = 0.02;
-                drawStartMarker.visible = true;
-            }
-        }
-
-        function onPointerMove(event) {
-            pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-            pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-
-            if (currentMode === MODES.DRAW) {
-                const snapPt = getSnappedPointer();
-                if (snapPt) {
-                    drawCursorMesh.position.copy(snapPt);
-                    drawCursorMesh.visible = true;
-                    if (isDrawing) updateDrawingVisuals(snapPt);
-                    if (drawPoints.length > 2) {
-                        const dist = snapPt.distanceTo(drawPoints[0]);
-                        if (dist < 0.3) {
-                            drawStartMarker.scale.setScalar(1.5);
-                            drawCursorMesh.material.color.setHex(0x10b981); 
-                        } else {
-                            drawStartMarker.scale.setScalar(1);
-                            drawCursorMesh.material.color.setHex(CONF.drawLineColor);
-                        }
-                    }
-                } else {
-                    drawCursorMesh.visible = false;
-                }
-            } else if (currentMode === MODES.FILL) {
-                const snapPt = getVertexSnapPointer();
-                if (snapPt) {
-                    fillMarkerMesh.position.copy(snapPt);
-                    fillMarkerMesh.visible = true;
-                } else {
-                    fillMarkerMesh.visible = false;
-                }
-            }
-        }
-
-        function getSnappedPointer() {
-            raycaster.setFromCamera(pointer, camera);
-            const plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0);
-            const target = new THREE.Vector3();
-            raycaster.ray.intersectPlane(plane, target);
-            if (target) {
-                target.x = Math.round(target.x / CONF.snapUnit) * CONF.snapUnit;
-                target.z = Math.round(target.z / CONF.snapUnit) * CONF.snapUnit;
-                target.y = 0.02;
-                return target;
-            }
-            return null;
-        }
-
-        function handleDrawClick(point) {
-            document.getElementById('draw-guide').classList.remove('visible');
-            if (drawPoints.length > 2) {
-                const start = drawPoints[0];
-                if (point.distanceTo(start) < 0.3) {
-                    finishShape();
-                    return;
-                }
-            }
-            drawPoints.push(point);
-            isDrawing = true;
-            updateDrawingVisuals(point);
-        }
-
-        function finishShape() {
-            if (drawPoints.length < 3) return;
-            const mesh = createCardboardShape(drawPoints);
-            // Add manually here to match old flow if needed, but createCardboardShape adds it now unless flag passed
-            resetDrawing();
-            switchMode(MODES.BUILD);
-            selectObject(mesh);
-            recordHistory();
-        }
-
-        function resetDrawing() {
-            drawPoints = [];
-            isDrawing = false;
-            drawLineMesh.visible = false;
-            drawStartMarker.visible = false;
-            if (currentMode === MODES.DRAW) document.getElementById('draw-guide').classList.add('visible');
-        }
-
-        function getVertexSnapPointer() {
-            raycaster.setFromCamera(pointer, camera);
-            const intersects = raycaster.intersectObjects(objects, false);
-            if (intersects.length === 0) return null;
-            const hit = intersects[0];
-            const snapPoints = getWorldSnapPoints(hit.object);
-            let bestP = null;
-            let minD = 0.5;
-            for (let p of snapPoints) {
-                const dist = p.distanceTo(hit.point);
-                if (dist < minD) { minD = dist; bestP = p; }
-            }
-            return bestP;
-        }
-
-        function handleFillClick(point) {
-            document.getElementById('fill-guide').classList.remove('visible');
-            for(let p of fillPoints) { if (p.distanceTo(point) < 0.01) return; }
-            fillPoints.push(point);
-            const marker = fillMarkerMesh.clone();
-            marker.position.copy(point);
-            marker.visible = true;
-            marker.material = marker.material.clone();
-            marker.material.color.setHex(0x00ffff);
-            scene.add(marker);
-            fillSelectedMarkers.push(marker);
-            if (fillPoints.length === 3) {
-                const mesh = createFillShape(fillPoints[0], fillPoints[1], fillPoints[2]);
-                resetFill();
-                switchMode(MODES.BUILD);
-                selectObject(mesh);
-                recordHistory();
-            }
-        }
-
-        function resetFill() {
-            fillPoints = [];
-            fillSelectedMarkers.forEach(m => scene.remove(m));
-            fillSelectedMarkers = [];
-            fillMarkerMesh.visible = false;
-            if (currentMode === MODES.FILL) document.getElementById('fill-guide').classList.add('visible');
-        }
-
-        function getWorldSnapPoints(obj) {
-            if (!obj.userData.snapPoints) return [];
-            const points = obj.userData.snapPoints.map(p => p.clone());
-            obj.updateMatrixWorld();
-            points.forEach(p => p.applyMatrix4(obj.matrixWorld));
-            return points;
-        }
-        
-        function disposeObject(obj) {
-            if (!obj) return;
-            
-            // Remove from scene first
-            if (obj.removeFromParent) {
-                 obj.removeFromParent();
-            } else {
-                 scene.remove(obj);
-            }
-
-            // Recursive traversal for children (like edge lines)
-            obj.traverse((child) => {
-                if (child.isMesh || child.isLineSegments || child.isLine) {
-                    // Dispose Geometry
-                    if (child.geometry) {
-                        child.geometry.dispose();
-                    }
-
-                    // Dispose Material
-                    if (child.material) {
-                        // Material can be an array
-                        if (Array.isArray(child.material)) {
-                            child.material.forEach(mat => {
-                                if (mat.map) mat.map.dispose();
-                                mat.dispose();
-                            });
-                        } else {
-                            if (child.material.map) child.material.map.dispose();
-                            child.material.dispose();
-                        }
-                    }
-                }
-            });
-        }
-        
-        // Transform & Context Menu logic...
-        function duplicateSelected() {
-            if (!selectedObject || selectedObject.userData.isAnchor) return;
-            const original = selectedObject;
-            const clone = original.clone(false);
-            clone.position.addScalar(1);
-            clone.rotation.copy(original.rotation);
-            clone.scale.copy(original.scale);
-            
-            // Re-create texture canvas for independent painting
-            const oldCanvas = original.userData.textureCanvas;
-            const newCanvas = document.createElement('canvas');
-            newCanvas.width = CONF.texSize;
-            newCanvas.height = CONF.texSize;
-            newCanvas.getContext('2d').drawImage(oldCanvas, 0, 0);
-            
-            const tex = new THREE.CanvasTexture(newCanvas);
-            tex.magFilter = THREE.NearestFilter;
-            tex.minFilter = THREE.NearestFilter;
-            tex.colorSpace = THREE.SRGBColorSpace;
-            
-            const newMat = original.material.clone();
-            newMat.map = tex;
-            clone.material = newMat;
-            clone.userData.textureCanvas = newCanvas;
-            clone.userData.snapPoints = original.userData.snapPoints;
-            clone.userData.geometryConfig = original.userData.geometryConfig; // Copy config for saving
-
-            const edges = new THREE.EdgesGeometry(clone.geometry);
-            const line = new THREE.LineSegments(edges, new THREE.LineBasicMaterial({ color: 0x000000, opacity: 0.3, transparent: true }));
-            clone.add(line);
-
-            scene.add(clone);
-            objects.push(clone);
-            selectObject(clone);
-            recordHistory();
-            hideContextMenu();
-        }
-
-        function deleteSelected() {
-            if (selectedObject && !selectedObject.userData.isAnchor) {
-                transformer.detach();
-                
-                // Remove from internal list
-                objects = objects.filter(o => o !== selectedObject);
-                
-                // Dispose resources and remove from scene
-                disposeObject(selectedObject);
-                
-                selectedObject = null;
-                
-                // UI updates
-                document.getElementById('transform-info').classList.add('hidden');
-                document.getElementById('paint-panel').classList.add('hidden');
-                recordHistory();
-                hideContextMenu();
-            }
-        }
-        
-        function clearScene(record = true) {
-             transformer.detach();
-             
-             // Dispose all objects
-             objects.forEach(o => disposeObject(o));
-             
-             objects = [];
-             selectedObject = null;
-             
-             // UI updates
-             document.getElementById('transform-info').classList.add('hidden');
-             document.getElementById('paint-panel').classList.add('hidden');
-             if (record) recordHistory();
-             hideContextMenu();
-        }
-
-        function onContextMenu(event) {
-            if (currentMode !== MODES.BUILD) return;
-            event.preventDefault();
-            pointer.x = (event.clientX / window.innerWidth) * 2 - 1;
-            pointer.y = -(event.clientY / window.innerHeight) * 2 + 1;
-            raycaster.setFromCamera(pointer, camera);
-            const intersects = raycaster.intersectObjects(objects, false);
-            if (intersects.length > 0) {
-                selectObject(intersects[0].object);
-                const menu = document.getElementById('context-menu');
-                menu.style.left = event.clientX + 'px';
-                menu.style.top = event.clientY + 'px';
-                menu.classList.remove('hidden');
-                setTimeout(() => menu.classList.remove('scale-95', 'opacity-0'), 10);
-            }
-        }
-
-        function hideContextMenu() {
-            const menu = document.getElementById('context-menu');
-            if (!menu.classList.contains('hidden')) {
-                menu.classList.add('scale-95', 'opacity-0');
-                setTimeout(() => menu.classList.add('hidden'), 100);
-            }
-        }
-        
-        function updateTransformUI() {
-            if (!selectedObject) return;
-            if (document.activeElement.classList.contains('transform-input')) return;
-            const p = selectedObject.position;
-            const r = selectedObject.rotation;
-            const s = selectedObject.scale;
-            const toDeg = (rad) => parseFloat((rad * (180/Math.PI)).toFixed(1));
-            const fmt = (num) => parseFloat(num.toFixed(2));
-            document.getElementById('inp-pos-x').value = fmt(p.x);
-            document.getElementById('inp-pos-y').value = fmt(p.y);
-            document.getElementById('inp-pos-z').value = fmt(p.z);
-            document.getElementById('inp-rot-x').value = toDeg(r.x);
-            document.getElementById('inp-rot-y').value = toDeg(r.y);
-            document.getElementById('inp-rot-z').value = toDeg(r.z);
-            document.getElementById('inp-scl-x').value = fmt(s.x);
-            document.getElementById('inp-scl-y').value = fmt(s.y);
-            document.getElementById('inp-scl-z').value = fmt(s.z);
-        }
-
-        function applyTransformFromUI() {
-             if (!selectedObject) return;
-             const px = parseFloat(document.getElementById('inp-pos-x').value) || 0;
-             const py = parseFloat(document.getElementById('inp-pos-y').value) || 0;
-             const pz = parseFloat(document.getElementById('inp-pos-z').value) || 0;
-             const rx = parseFloat(document.getElementById('inp-rot-x').value) || 0;
-             const ry = parseFloat(document.getElementById('inp-rot-y').value) || 0;
-             const rz = parseFloat(document.getElementById('inp-rot-z').value) || 0;
-             const sx = parseFloat(document.getElementById('inp-scl-x').value) || 1;
-             const sy = parseFloat(document.getElementById('inp-scl-y').value) || 1;
-             const sz = parseFloat(document.getElementById('inp-scl-z').value) || 1;
-             selectedObject.position.set(px, py, pz);
-             selectedObject.rotation.set(rx * (Math.PI/180), ry * (Math.PI/180), rz * (Math.PI/180));
-             selectedObject.scale.set(sx, sy, sz);
-        }
-        
-        function performSnap() {
-            const snap = findBestSnap();
-            if (snap) {
-                selectedObject.position.add(snap.delta);
-                snapLine.visible = false;
-                updateTransformUI();
-            }
-        }
-        
-        function previewSnap() {
-            const snap = findBestSnap();
-            if (snap) {
-                snapLine.geometry.setFromPoints([snap.start, snap.end]);
-                snapLine.visible = true;
-            } else {
-                snapLine.visible = false;
-            }
-        }
-        
-        function findBestSnap() {
-            if (!selectedObject || selectedObject.userData.isAnchor) return null;
-            const myPoints = getWorldSnapPoints(selectedObject);
-            let closestDist = SNAP_THRESHOLD;
-            let snapDelta = null;
-            let snapStart = null;
-            let snapEnd = null;
-            for (let other of objects) {
-                if (other === selectedObject) continue;
-                const otherPoints = getWorldSnapPoints(other);
-                for (let myP of myPoints) {
-                    for (let otherP of otherPoints) {
-                        const dist = myP.distanceTo(otherP);
-                        if (dist < closestDist) {
-                            closestDist = dist;
-                            snapDelta = new THREE.Vector3().subVectors(otherP, myP);
-                            snapStart = myP;
-                            snapEnd = otherP;
-                        }
-                    }
-                }
-            }
-            if (snapDelta) return { delta: snapDelta, start: snapStart, end: snapEnd };
-            return null;
-        }
-
-        function onKeyDown(event) {
-            if (event.key === 'Delete' || event.key === 'Backspace') deleteSelected();
-            // Undo/Redo Shortcuts
-            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'z') {
-                event.preventDefault();
-                undo();
-            }
-            if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 'y') {
-                event.preventDefault();
-                redo();
-            }
-            
-            if (event.key === 'Escape') {
-                if (currentMode === MODES.DRAW) resetDrawing();
-                else if (currentMode === MODES.FILL) resetFill();
-                else selectObject(null);
-            }
-            if (event.key.toLowerCase() === 'w' && currentMode === MODES.BUILD) transformer.setMode('translate');
-            if (event.key.toLowerCase() === 'e' && currentMode === MODES.BUILD) transformer.setMode('rotate');
-        }
-
-        function onWindowResize() {
-            camera.aspect = window.innerWidth / window.innerHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(window.innerWidth, window.innerHeight);
-        }
-
-        function animate() {
-            requestAnimationFrame(animate);
-            orbit.update();
-            renderer.render(scene, camera);
-        }
-
-        init();
-    </script>
+    <script type="module" src="js/main.js"></script>
 </body>
 </html>
