@@ -6,13 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bunny Retro Studio v7</title>
 
-    <!-- Google Fonts: Press Start 2P (Logo) & Silkscreen (UI) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap"
         rel="stylesheet">
 
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
@@ -42,10 +40,8 @@
         }
     </script>
 
-    <!-- Babel for JSX -->
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
-    <!-- Import Map for ES Modules -->
     <script type="importmap">
     {
         "imports": {
@@ -136,7 +132,8 @@
     <script type="text/babel" data-type="module">
         import React, { useState, useEffect, useRef } from 'react';
         import { createRoot } from 'react-dom/client';
-        import { Play, Pause, Trash2, Volume2, Save, Upload, Music, Wand2, AlertTriangle, ArrowRight, ArrowLeft, FileWarning, Plus, X, Settings2, Sliders, Dices, Download, ClipboardCopy, ClipboardPaste, FolderOpen, CheckCircle, Activity } from 'lucide-react';
+        // Added FileJson to imports
+        import { Play, Pause, Trash2, Volume2, Save, Upload, Music, Wand2, AlertTriangle, ArrowRight, ArrowLeft, FileWarning, Plus, X, Settings2, Sliders, Dices, Download, ClipboardCopy, ClipboardPaste, FolderOpen, CheckCircle, Activity, FileJson } from 'lucide-react';
 
         // --- FILE SYSTEM UTILS (TAURI SUPPORT) ---
         const isTauri = typeof window !== 'undefined' && window.__TAURI__ !== undefined;
@@ -560,6 +557,10 @@
             const [dragState, setDragState] = useState(null);
             const [resizing, setResizing] = useState(null);
 
+            // --- PASTE JSON STATE ---
+            const [isPasteJsonOpen, setIsPasteJsonOpen] = useState(false);
+            const [pastedJsonContent, setPastedJsonContent] = useState("");
+
             const totalSteps = barCount * STEPS_PER_BAR;
             
             const audioRef = useRef(null);
@@ -929,6 +930,25 @@
                 }; 
                 if (e.target.files[0]) reader.readAsText(e.target.files[0]); 
             };
+
+            const handlePasteJsonLoad = () => {
+                try {
+                    const data = JSON.parse(pastedJsonContent);
+                    if (data.tracks) setTracks(data.tracks.map(t => ({
+                        ...t,
+                        params: { ...getDefaultParams(), ...(t.params || {}) }
+                    })));
+                    if (data.bpm) setBpm(data.bpm);
+                    if (data.barCount) setBarCount(data.barCount);
+                    if (data.scaleRoot) setScaleRoot(data.scaleRoot);
+                    if (data.scaleType) setScaleType(data.scaleType);
+                    setIsPasteJsonOpen(false);
+                    setPastedJsonContent("");
+                } catch (e) {
+                    alert("Invalid JSON data");
+                }
+            };
+
             const scrollToPage = (i) => { if (scrollContainerRef.current) { const width = scrollContainerRef.current.clientWidth; scrollContainerRef.current.scrollTo({ left: i * width, behavior: 'smooth' }); setViewedPage(i); } };
             const changeBarCount = (d) => setBarCount(p => Math.max(1, Math.min(8, p + d)));
             const getAvailableTemplates = () => { const track = tracks.find(t => t.id === selectedTrackId); if (!track) return []; if (track.type === 'drum') return PATTERN_TEMPLATES.drum; if (track.type === 'triangle') return PATTERN_TEMPLATES.bass; return PATTERN_TEMPLATES.melody; };
@@ -975,6 +995,7 @@
                     {clearConfirmType && (<div className="absolute inset-0 bg-black/70 z-50 flex items-center justify-center backdrop-blur-sm" onClick={() => setClearConfirmType(null)}> <div className="bg-gba-bg-light border-2 border-gba-border p-6 shadow-2xl max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}> <div className="flex items-center space-x-3 mb-4 text-gba-red-light"> <AlertTriangle size={32} /> <h3 className="text-xl font-bold text-gba-text">{clearConfirmType === 'all' ? 'Reset Project?' : 'Clear Pattern?'}</h3> </div> <p className="text-gba-text-muted mb-6 leading-relaxed"> {clearConfirmType === 'all' ? <span className="text-gba-red-light">Warning: This will delete everything.</span> : <>Clear all notes from <span className="text-gba-text">{selectedTrack?.name}</span>?</>} </p> <div className="flex justify-end space-x-3"> <button onClick={() => setClearConfirmType(null)} className="px-4 py-2 text-gba-text-muted hover:bg-gba-btn border-2 border-gba-border retro-btn">Cancel</button> <button onClick={confirmClear} className="px-4 py-2 bg-gba-red hover:bg-gba-red-light text-gba-text border-2 border-gba-border retro-btn">Confirm</button> </div> </div> </div>)}
                     {trackToDelete && (<div className="absolute inset-0 bg-black/70 z-50 flex items-center justify-center backdrop-blur-sm" onClick={() => setTrackToDelete(null)}> <div className="bg-gba-bg-light border-2 border-gba-border p-6 shadow-2xl max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}> <div className="flex items-center space-x-3 mb-4 text-gba-red-light"> <Trash2 size={32} /> <h3 className="text-xl font-bold text-gba-text">Delete Track?</h3> </div> <p className="text-gba-text-muted mb-6 leading-relaxed">Delete <span className="text-gba-text font-semibold">{trackToDelete.name}</span>?</p> <div className="flex justify-end space-x-3"> <button onClick={() => setTrackToDelete(null)} className="px-4 py-2 text-gba-text-muted hover:bg-gba-btn border-2 border-gba-border retro-btn">Cancel</button> <button onClick={confirmDeleteTrack} className="px-4 py-2 bg-gba-red hover:bg-gba-red-light text-gba-text border-2 border-gba-border retro-btn">Delete</button> </div> </div> </div>)}
                     {isAddTrackOpen && (<div className="absolute inset-0 bg-black/70 z-50 flex items-center justify-center backdrop-blur-sm" onClick={() => setIsAddTrackOpen(false)}> <div className="bg-gba-bg-light border-2 border-gba-border p-6 shadow-2xl max-w-sm w-full mx-4" onClick={(e) => e.stopPropagation()}> <h3 className="text-lg font-bold text-gba-text mb-4">Add New Track</h3> <div className="grid grid-cols-2 gap-3"> {['square', 'sawtooth', 'triangle', 'drum'].map(t => (<button key={t} onClick={() => addNewTrack(t)} className="p-4 bg-gba-btn hover:bg-gba-blue hover:text-gba-bg-dark border-2 border-gba-border transition-colors flex flex-col items-center capitalize retro-btn"> <span className="text-sm font-semibold">{t}</span> </button>))} </div> <button onClick={() => setIsAddTrackOpen(false)} className="mt-4 w-full py-2 text-gba-text-muted hover:text-gba-text border-2 border-gba-border retro-btn">Cancel</button> </div> </div>)}
+                    {isPasteJsonOpen && (<div className="absolute inset-0 bg-black/70 z-50 flex items-center justify-center backdrop-blur-sm" onClick={() => setIsPasteJsonOpen(false)}> <div className="bg-gba-bg-light border-2 border-gba-border p-6 shadow-2xl max-w-lg w-full mx-4" onClick={(e) => e.stopPropagation()}> <h3 className="text-lg font-bold text-gba-text mb-4">Paste Project JSON</h3> <textarea value={pastedJsonContent} onChange={(e) => setPastedJsonContent(e.target.value)} className="w-full h-48 bg-gba-bg-dark text-gba-text font-mono text-xs p-3 border-2 border-gba-border outline-none mb-4 custom-scrollbar resize-none" placeholder='Paste content of .json file here...' /> <div className="flex justify-end space-x-3"> <button onClick={() => setIsPasteJsonOpen(false)} className="px-4 py-2 text-gba-text-muted hover:bg-gba-btn border-2 border-gba-border retro-btn">Cancel</button> <button onClick={handlePasteJsonLoad} className="px-4 py-2 bg-gba-blue hover:bg-gba-btn-hover text-gba-bg-dark border-2 border-gba-border retro-btn font-bold">Load Data</button> </div> </div> </div>)}
 
                     <div className="bg-gba-bg-light border-b-2 border-gba-border flex flex-col shadow-lg z-10 shrink-0">
                         <div className="h-12 flex items-center justify-between px-6 border-b border-gba-border bg-gba-bg-med">
@@ -1031,6 +1052,11 @@
                                 <button onClick={() => setClearConfirmType('all')} className="px-3 py-2 flex items-center gap-2 retro-btn bg-gba-btn text-gba-text-muted hover:text-gba-red hover:bg-gba-btn-hover border-2 border-gba-border">
                                     <FileWarning size={16} />
                                     <span className="text-xs font-bold">Reset</span>
+                                </button>
+
+                                <button onClick={() => setIsPasteJsonOpen(true)} className="px-3 py-2 flex items-center gap-2 retro-btn bg-gba-btn text-gba-text-muted hover:text-gba-blue hover:bg-gba-btn-hover border-2 border-gba-border" title="Paste JSON Data">
+                                    <FileJson size={16} />
+                                    <span className="text-xs font-bold">Paste</span>
                                 </button>
 
                                 <label className="px-3 py-2 flex items-center gap-2 retro-btn bg-gba-btn text-gba-text-muted hover:text-gba-blue hover:bg-gba-btn-hover border-2 border-gba-border cursor-pointer">
