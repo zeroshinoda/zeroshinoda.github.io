@@ -1,0 +1,2686 @@
+{
+  "tracks": [
+    {
+      "id": 1,
+      "name": "⚔ Hero Lead",
+      "type": "square",
+      "volume": 0.48,
+      "color": "bg-gba-red",
+      "notes": {
+        "0": {
+          "note": "A4",
+          "length": 2
+        },
+        "2": {
+          "note": "C5",
+          "length": 1
+        },
+        "3": {
+          "note": "D5",
+          "length": 1
+        },
+        "4": {
+          "note": "E5",
+          "length": 2
+        },
+        "6": {
+          "note": "D5",
+          "length": 1
+        },
+        "7": {
+          "note": "C5",
+          "length": 1
+        },
+        "8": {
+          "note": "B4",
+          "length": 1
+        },
+        "9": {
+          "note": "A4",
+          "length": 1
+        },
+        "10": {
+          "note": "G#4",
+          "length": 1
+        },
+        "11": {
+          "note": "A4",
+          "length": 1
+        },
+        "12": {
+          "note": "C5",
+          "length": 1
+        },
+        "13": {
+          "note": "B4",
+          "length": 1
+        },
+        "14": {
+          "note": "A4",
+          "length": 1
+        },
+        "15": {
+          "note": "G4",
+          "length": 1
+        },
+        "16": {
+          "note": "F4",
+          "length": 2
+        },
+        "18": {
+          "note": "G4",
+          "length": 1
+        },
+        "19": {
+          "note": "A4",
+          "length": 1
+        },
+        "20": {
+          "note": "B4",
+          "length": 1
+        },
+        "21": {
+          "note": "C5",
+          "length": 1
+        },
+        "22": {
+          "note": "D5",
+          "length": 1
+        },
+        "23": {
+          "note": "D#5",
+          "length": 1
+        },
+        "24": {
+          "note": "E5",
+          "length": 2
+        },
+        "26": {
+          "note": "D5",
+          "length": 1
+        },
+        "27": {
+          "note": "C5",
+          "length": 1
+        },
+        "28": {
+          "note": "B4",
+          "length": 1
+        },
+        "29": {
+          "note": "A4",
+          "length": 1
+        },
+        "30": {
+          "note": "F#4",
+          "length": 1
+        },
+        "31": {
+          "note": "G4",
+          "length": 1
+        },
+        "32": {
+          "note": "A4",
+          "length": 1
+        },
+        "33": {
+          "note": "E5",
+          "length": 1
+        },
+        "34": {
+          "note": "D5",
+          "length": 1
+        },
+        "35": {
+          "note": "C5",
+          "length": 1
+        },
+        "36": {
+          "note": "B4",
+          "length": 1
+        },
+        "37": {
+          "note": "C5",
+          "length": 1
+        },
+        "38": {
+          "note": "D5",
+          "length": 2
+        },
+        "40": {
+          "note": "E5",
+          "length": 1
+        },
+        "41": {
+          "note": "F5",
+          "length": 1
+        },
+        "42": {
+          "note": "E5",
+          "length": 1
+        },
+        "43": {
+          "note": "D5",
+          "length": 1
+        },
+        "44": {
+          "note": "C5",
+          "length": 1
+        },
+        "45": {
+          "note": "D5",
+          "length": 1
+        },
+        "46": {
+          "note": "E5",
+          "length": 1
+        },
+        "47": {
+          "note": "G5",
+          "length": 1
+        },
+        "48": {
+          "note": "A5",
+          "length": 4
+        },
+        "52": {
+          "note": "G5",
+          "length": 1
+        },
+        "53": {
+          "note": "F5",
+          "length": 1
+        },
+        "54": {
+          "note": "E5",
+          "length": 1
+        },
+        "55": {
+          "note": "D5",
+          "length": 1
+        },
+        "56": {
+          "note": "C5",
+          "length": 1
+        },
+        "57": {
+          "note": "B4",
+          "length": 1
+        },
+        "58": {
+          "note": "A4",
+          "length": 1
+        },
+        "59": {
+          "note": "G#4",
+          "length": 1
+        },
+        "60": {
+          "note": "A4",
+          "length": 1
+        },
+        "61": {
+          "note": "C5",
+          "length": 1
+        },
+        "62": {
+          "note": "E5",
+          "length": 1
+        },
+        "63": {
+          "note": "D5",
+          "length": 1
+        },
+        "64": {
+          "note": "C5",
+          "length": 2
+        },
+        "66": {
+          "note": "D#5",
+          "length": 1
+        },
+        "67": {
+          "note": "E5",
+          "length": 1
+        },
+        "68": {
+          "note": "F5",
+          "length": 2
+        },
+        "70": {
+          "note": "E5",
+          "length": 1
+        },
+        "71": {
+          "note": "D#5",
+          "length": 1
+        },
+        "72": {
+          "note": "D5",
+          "length": 1
+        },
+        "73": {
+          "note": "C5",
+          "length": 1
+        },
+        "74": {
+          "note": "B4",
+          "length": 1
+        },
+        "75": {
+          "note": "A4",
+          "length": 1
+        },
+        "76": {
+          "note": "G#4",
+          "length": 1
+        },
+        "77": {
+          "note": "A4",
+          "length": 1
+        },
+        "78": {
+          "note": "B4",
+          "length": 1
+        },
+        "79": {
+          "note": "C5",
+          "length": 1
+        },
+        "80": {
+          "note": "D5",
+          "length": 1
+        },
+        "81": {
+          "note": "D#5",
+          "length": 1
+        },
+        "82": {
+          "note": "E5",
+          "length": 2
+        },
+        "84": {
+          "note": "F5",
+          "length": 1
+        },
+        "85": {
+          "note": "E5",
+          "length": 1
+        },
+        "86": {
+          "note": "D5",
+          "length": 1
+        },
+        "87": {
+          "note": "C5",
+          "length": 1
+        },
+        "88": {
+          "note": "B4",
+          "length": 1
+        },
+        "89": {
+          "note": "C5",
+          "length": 1
+        },
+        "90": {
+          "note": "D5",
+          "length": 1
+        },
+        "91": {
+          "note": "E5",
+          "length": 1
+        },
+        "92": {
+          "note": "F5",
+          "length": 1
+        },
+        "93": {
+          "note": "E5",
+          "length": 1
+        },
+        "94": {
+          "note": "D5",
+          "length": 1
+        },
+        "95": {
+          "note": "B4",
+          "length": 1
+        },
+        "96": {
+          "note": "C5",
+          "length": 1
+        },
+        "97": {
+          "note": "E5",
+          "length": 1
+        },
+        "98": {
+          "note": "G5",
+          "length": 2
+        },
+        "100": {
+          "note": "F#5",
+          "length": 1
+        },
+        "101": {
+          "note": "E5",
+          "length": 1
+        },
+        "102": {
+          "note": "D5",
+          "length": 1
+        },
+        "103": {
+          "note": "C5",
+          "length": 1
+        },
+        "104": {
+          "note": "B4",
+          "length": 1
+        },
+        "105": {
+          "note": "D5",
+          "length": 1
+        },
+        "106": {
+          "note": "E5",
+          "length": 1
+        },
+        "107": {
+          "note": "G5",
+          "length": 1
+        },
+        "108": {
+          "note": "A5",
+          "length": 2
+        },
+        "110": {
+          "note": "G5",
+          "length": 1
+        },
+        "111": {
+          "note": "F5",
+          "length": 1
+        },
+        "112": {
+          "note": "E5",
+          "length": 1
+        },
+        "113": {
+          "note": "D5",
+          "length": 1
+        },
+        "114": {
+          "note": "C5",
+          "length": 1
+        },
+        "115": {
+          "note": "B4",
+          "length": 1
+        },
+        "116": {
+          "note": "A4",
+          "length": 2
+        },
+        "118": {
+          "note": "G#4",
+          "length": 1
+        },
+        "119": {
+          "note": "A4",
+          "length": 1
+        },
+        "120": {
+          "note": "B4",
+          "length": 1
+        },
+        "121": {
+          "note": "C5",
+          "length": 1
+        },
+        "122": {
+          "note": "D5",
+          "length": 1
+        },
+        "123": {
+          "note": "E5",
+          "length": 1
+        },
+        "124": {
+          "note": "D5",
+          "length": 1
+        },
+        "125": {
+          "note": "C5",
+          "length": 1
+        },
+        "126": {
+          "note": "B4",
+          "length": 1
+        },
+        "127": {
+          "note": "A4",
+          "length": 1
+        }
+      },
+      "params": {
+        "attack": 0.003,
+        "decay": 0.06,
+        "sustain": 0.68,
+        "release": 0.1,
+        "timbre": 0.82
+      }
+    },
+    {
+      "id": 2,
+      "name": "🌀 Synth Arp",
+      "type": "sawtooth",
+      "volume": 0.22,
+      "color": "bg-gba-purple",
+      "notes": {
+        "0": {
+          "note": "A3",
+          "length": 1
+        },
+        "1": {
+          "note": "E4",
+          "length": 1
+        },
+        "2": {
+          "note": "A4",
+          "length": 1
+        },
+        "3": {
+          "note": "E4",
+          "length": 1
+        },
+        "4": {
+          "note": "C4",
+          "length": 1
+        },
+        "5": {
+          "note": "A4",
+          "length": 1
+        },
+        "6": {
+          "note": "E4",
+          "length": 1
+        },
+        "7": {
+          "note": "C4",
+          "length": 1
+        },
+        "8": {
+          "note": "A3",
+          "length": 1
+        },
+        "9": {
+          "note": "C4",
+          "length": 1
+        },
+        "10": {
+          "note": "E4",
+          "length": 1
+        },
+        "11": {
+          "note": "A4",
+          "length": 1
+        },
+        "12": {
+          "note": "E4",
+          "length": 1
+        },
+        "13": {
+          "note": "C4",
+          "length": 1
+        },
+        "14": {
+          "note": "A3",
+          "length": 1
+        },
+        "15": {
+          "note": "E3",
+          "length": 1
+        },
+        "16": {
+          "note": "F3",
+          "length": 1
+        },
+        "17": {
+          "note": "C4",
+          "length": 1
+        },
+        "18": {
+          "note": "F4",
+          "length": 1
+        },
+        "19": {
+          "note": "A4",
+          "length": 1
+        },
+        "20": {
+          "note": "F4",
+          "length": 1
+        },
+        "21": {
+          "note": "C4",
+          "length": 1
+        },
+        "22": {
+          "note": "A3",
+          "length": 1
+        },
+        "23": {
+          "note": "F3",
+          "length": 1
+        },
+        "24": {
+          "note": "G3",
+          "length": 1
+        },
+        "25": {
+          "note": "B3",
+          "length": 1
+        },
+        "26": {
+          "note": "D4",
+          "length": 1
+        },
+        "27": {
+          "note": "G4",
+          "length": 1
+        },
+        "28": {
+          "note": "D4",
+          "length": 1
+        },
+        "29": {
+          "note": "G4",
+          "length": 1
+        },
+        "30": {
+          "note": "B4",
+          "length": 1
+        },
+        "31": {
+          "note": "G4",
+          "length": 1
+        },
+        "32": {
+          "note": "A3",
+          "length": 1
+        },
+        "33": {
+          "note": "E4",
+          "length": 1
+        },
+        "34": {
+          "note": "C4",
+          "length": 1
+        },
+        "35": {
+          "note": "E4",
+          "length": 1
+        },
+        "36": {
+          "note": "A3",
+          "length": 1
+        },
+        "37": {
+          "note": "C4",
+          "length": 1
+        },
+        "38": {
+          "note": "E4",
+          "length": 1
+        },
+        "39": {
+          "note": "A4",
+          "length": 1
+        },
+        "40": {
+          "note": "D3",
+          "length": 1
+        },
+        "41": {
+          "note": "A3",
+          "length": 1
+        },
+        "42": {
+          "note": "D4",
+          "length": 1
+        },
+        "43": {
+          "note": "F4",
+          "length": 1
+        },
+        "44": {
+          "note": "A4",
+          "length": 1
+        },
+        "45": {
+          "note": "F4",
+          "length": 1
+        },
+        "46": {
+          "note": "D4",
+          "length": 1
+        },
+        "47": {
+          "note": "A3",
+          "length": 1
+        },
+        "48": {
+          "note": "F3",
+          "length": 1
+        },
+        "49": {
+          "note": "A3",
+          "length": 1
+        },
+        "50": {
+          "note": "C4",
+          "length": 1
+        },
+        "51": {
+          "note": "F4",
+          "length": 1
+        },
+        "52": {
+          "note": "A4",
+          "length": 1
+        },
+        "53": {
+          "note": "F4",
+          "length": 1
+        },
+        "54": {
+          "note": "C4",
+          "length": 1
+        },
+        "55": {
+          "note": "A3",
+          "length": 1
+        },
+        "56": {
+          "note": "E3",
+          "length": 1
+        },
+        "57": {
+          "note": "G#3",
+          "length": 1
+        },
+        "58": {
+          "note": "B3",
+          "length": 1
+        },
+        "59": {
+          "note": "E4",
+          "length": 1
+        },
+        "60": {
+          "note": "G#4",
+          "length": 1
+        },
+        "61": {
+          "note": "E4",
+          "length": 1
+        },
+        "62": {
+          "note": "B3",
+          "length": 1
+        },
+        "63": {
+          "note": "G#3",
+          "length": 1
+        },
+        "64": {
+          "note": "C3",
+          "length": 1
+        },
+        "65": {
+          "note": "E3",
+          "length": 1
+        },
+        "66": {
+          "note": "G3",
+          "length": 1
+        },
+        "67": {
+          "note": "C4",
+          "length": 1
+        },
+        "68": {
+          "note": "E4",
+          "length": 1
+        },
+        "69": {
+          "note": "G4",
+          "length": 1
+        },
+        "70": {
+          "note": "E4",
+          "length": 1
+        },
+        "71": {
+          "note": "C4",
+          "length": 1
+        },
+        "72": {
+          "note": "A#3",
+          "length": 1
+        },
+        "73": {
+          "note": "D4",
+          "length": 1
+        },
+        "74": {
+          "note": "F4",
+          "length": 1
+        },
+        "75": {
+          "note": "A#4",
+          "length": 1
+        },
+        "76": {
+          "note": "F4",
+          "length": 1
+        },
+        "77": {
+          "note": "D4",
+          "length": 1
+        },
+        "78": {
+          "note": "A#3",
+          "length": 1
+        },
+        "79": {
+          "note": "D4",
+          "length": 1
+        },
+        "80": {
+          "note": "D3",
+          "length": 1
+        },
+        "81": {
+          "note": "F3",
+          "length": 1
+        },
+        "82": {
+          "note": "A3",
+          "length": 1
+        },
+        "83": {
+          "note": "D4",
+          "length": 1
+        },
+        "84": {
+          "note": "F4",
+          "length": 1
+        },
+        "85": {
+          "note": "D4",
+          "length": 1
+        },
+        "86": {
+          "note": "A3",
+          "length": 1
+        },
+        "87": {
+          "note": "D4",
+          "length": 1
+        },
+        "88": {
+          "note": "E3",
+          "length": 1
+        },
+        "89": {
+          "note": "G#3",
+          "length": 1
+        },
+        "90": {
+          "note": "B3",
+          "length": 1
+        },
+        "91": {
+          "note": "E4",
+          "length": 1
+        },
+        "92": {
+          "note": "B3",
+          "length": 1
+        },
+        "93": {
+          "note": "E4",
+          "length": 1
+        },
+        "94": {
+          "note": "G#4",
+          "length": 1
+        },
+        "95": {
+          "note": "E4",
+          "length": 1
+        },
+        "96": {
+          "note": "A3",
+          "length": 1
+        },
+        "97": {
+          "note": "E4",
+          "length": 1
+        },
+        "98": {
+          "note": "A4",
+          "length": 1
+        },
+        "99": {
+          "note": "C5",
+          "length": 1
+        },
+        "100": {
+          "note": "A4",
+          "length": 1
+        },
+        "101": {
+          "note": "E4",
+          "length": 1
+        },
+        "102": {
+          "note": "A3",
+          "length": 1
+        },
+        "103": {
+          "note": "E4",
+          "length": 1
+        },
+        "104": {
+          "note": "G3",
+          "length": 1
+        },
+        "105": {
+          "note": "D4",
+          "length": 1
+        },
+        "106": {
+          "note": "G4",
+          "length": 1
+        },
+        "107": {
+          "note": "B4",
+          "length": 1
+        },
+        "108": {
+          "note": "D5",
+          "length": 1
+        },
+        "109": {
+          "note": "B4",
+          "length": 1
+        },
+        "110": {
+          "note": "G4",
+          "length": 1
+        },
+        "111": {
+          "note": "D4",
+          "length": 1
+        },
+        "112": {
+          "note": "F3",
+          "length": 1
+        },
+        "113": {
+          "note": "A3",
+          "length": 1
+        },
+        "114": {
+          "note": "C4",
+          "length": 1
+        },
+        "115": {
+          "note": "F4",
+          "length": 1
+        },
+        "116": {
+          "note": "C4",
+          "length": 1
+        },
+        "117": {
+          "note": "F4",
+          "length": 1
+        },
+        "118": {
+          "note": "A4",
+          "length": 1
+        },
+        "119": {
+          "note": "F4",
+          "length": 1
+        },
+        "120": {
+          "note": "E3",
+          "length": 1
+        },
+        "121": {
+          "note": "G#3",
+          "length": 1
+        },
+        "122": {
+          "note": "B3",
+          "length": 1
+        },
+        "123": {
+          "note": "E4",
+          "length": 1
+        },
+        "124": {
+          "note": "G#3",
+          "length": 1
+        },
+        "125": {
+          "note": "B3",
+          "length": 1
+        },
+        "126": {
+          "note": "E3",
+          "length": 1
+        },
+        "127": {
+          "note": "G#3",
+          "length": 1
+        }
+      },
+      "params": {
+        "attack": 0.003,
+        "decay": 0.05,
+        "sustain": 0.28,
+        "release": 0.08,
+        "timbre": 0.5
+      }
+    },
+    {
+      "id": 3,
+      "name": "🛡 Realm Counter",
+      "type": "square",
+      "volume": 0.3,
+      "color": "bg-gba-yellow",
+      "notes": {
+        "0": {
+          "note": "E4",
+          "length": 1
+        },
+        "1": {
+          "note": "D4",
+          "length": 1
+        },
+        "2": {
+          "note": "C4",
+          "length": 2
+        },
+        "4": {
+          "note": "B3",
+          "length": 1
+        },
+        "5": {
+          "note": "C4",
+          "length": 1
+        },
+        "6": {
+          "note": "D4",
+          "length": 1
+        },
+        "7": {
+          "note": "E4",
+          "length": 1
+        },
+        "8": {
+          "note": "F4",
+          "length": 2
+        },
+        "10": {
+          "note": "E4",
+          "length": 1
+        },
+        "11": {
+          "note": "D4",
+          "length": 1
+        },
+        "12": {
+          "note": "C4",
+          "length": 1
+        },
+        "13": {
+          "note": "D4",
+          "length": 1
+        },
+        "14": {
+          "note": "E4",
+          "length": 1
+        },
+        "15": {
+          "note": "C4",
+          "length": 1
+        },
+        "16": {
+          "note": "A3",
+          "length": 1
+        },
+        "17": {
+          "note": "B3",
+          "length": 1
+        },
+        "18": {
+          "note": "C4",
+          "length": 1
+        },
+        "19": {
+          "note": "D4",
+          "length": 1
+        },
+        "20": {
+          "note": "E4",
+          "length": 2
+        },
+        "22": {
+          "note": "F#4",
+          "length": 1
+        },
+        "23": {
+          "note": "G4",
+          "length": 1
+        },
+        "24": {
+          "note": "A4",
+          "length": 2
+        },
+        "26": {
+          "note": "G4",
+          "length": 1
+        },
+        "27": {
+          "note": "F4",
+          "length": 1
+        },
+        "28": {
+          "note": "E4",
+          "length": 1
+        },
+        "29": {
+          "note": "D4",
+          "length": 1
+        },
+        "30": {
+          "note": "C4",
+          "length": 1
+        },
+        "31": {
+          "note": "B3",
+          "length": 1
+        },
+        "32": {
+          "note": "C4",
+          "length": 1
+        },
+        "33": {
+          "note": "A4",
+          "length": 1
+        },
+        "34": {
+          "note": "G4",
+          "length": 1
+        },
+        "35": {
+          "note": "F4",
+          "length": 1
+        },
+        "36": {
+          "note": "E4",
+          "length": 1
+        },
+        "37": {
+          "note": "F4",
+          "length": 1
+        },
+        "38": {
+          "note": "G4",
+          "length": 2
+        },
+        "40": {
+          "note": "A4",
+          "length": 1
+        },
+        "41": {
+          "note": "B4",
+          "length": 1
+        },
+        "42": {
+          "note": "A4",
+          "length": 1
+        },
+        "43": {
+          "note": "G4",
+          "length": 1
+        },
+        "44": {
+          "note": "F4",
+          "length": 1
+        },
+        "45": {
+          "note": "G4",
+          "length": 1
+        },
+        "46": {
+          "note": "A4",
+          "length": 1
+        },
+        "47": {
+          "note": "B4",
+          "length": 1
+        },
+        "48": {
+          "note": "C5",
+          "length": 4
+        },
+        "52": {
+          "note": "B4",
+          "length": 1
+        },
+        "53": {
+          "note": "A4",
+          "length": 1
+        },
+        "54": {
+          "note": "G4",
+          "length": 1
+        },
+        "55": {
+          "note": "F4",
+          "length": 1
+        },
+        "56": {
+          "note": "E4",
+          "length": 1
+        },
+        "57": {
+          "note": "D4",
+          "length": 1
+        },
+        "58": {
+          "note": "C4",
+          "length": 1
+        },
+        "59": {
+          "note": "B3",
+          "length": 1
+        },
+        "60": {
+          "note": "A3",
+          "length": 1
+        },
+        "61": {
+          "note": "E4",
+          "length": 1
+        },
+        "62": {
+          "note": "C4",
+          "length": 1
+        },
+        "63": {
+          "note": "A4",
+          "length": 1
+        },
+        "64": {
+          "note": "E4",
+          "length": 2
+        },
+        "66": {
+          "note": "G4",
+          "length": 1
+        },
+        "67": {
+          "note": "A4",
+          "length": 1
+        },
+        "68": {
+          "note": "B4",
+          "length": 2
+        },
+        "70": {
+          "note": "A4",
+          "length": 1
+        },
+        "71": {
+          "note": "G4",
+          "length": 1
+        },
+        "72": {
+          "note": "F#4",
+          "length": 1
+        },
+        "73": {
+          "note": "E4",
+          "length": 1
+        },
+        "74": {
+          "note": "D4",
+          "length": 1
+        },
+        "75": {
+          "note": "C4",
+          "length": 1
+        },
+        "76": {
+          "note": "B3",
+          "length": 1
+        },
+        "77": {
+          "note": "C4",
+          "length": 1
+        },
+        "78": {
+          "note": "D4",
+          "length": 1
+        },
+        "79": {
+          "note": "E4",
+          "length": 1
+        },
+        "80": {
+          "note": "A4",
+          "length": 1
+        },
+        "81": {
+          "note": "G4",
+          "length": 1
+        },
+        "82": {
+          "note": "G4",
+          "length": 2
+        },
+        "84": {
+          "note": "A4",
+          "length": 1
+        },
+        "85": {
+          "note": "G4",
+          "length": 1
+        },
+        "86": {
+          "note": "F4",
+          "length": 1
+        },
+        "87": {
+          "note": "E4",
+          "length": 1
+        },
+        "88": {
+          "note": "D4",
+          "length": 1
+        },
+        "89": {
+          "note": "E4",
+          "length": 1
+        },
+        "90": {
+          "note": "F4",
+          "length": 1
+        },
+        "91": {
+          "note": "G4",
+          "length": 1
+        },
+        "92": {
+          "note": "A4",
+          "length": 1
+        },
+        "93": {
+          "note": "G4",
+          "length": 1
+        },
+        "94": {
+          "note": "F4",
+          "length": 1
+        },
+        "95": {
+          "note": "E4",
+          "length": 1
+        },
+        "96": {
+          "note": "A3",
+          "length": 1
+        },
+        "97": {
+          "note": "C4",
+          "length": 1
+        },
+        "98": {
+          "note": "E4",
+          "length": 2
+        },
+        "100": {
+          "note": "D#4",
+          "length": 1
+        },
+        "101": {
+          "note": "C4",
+          "length": 1
+        },
+        "102": {
+          "note": "B3",
+          "length": 1
+        },
+        "103": {
+          "note": "A3",
+          "length": 1
+        },
+        "104": {
+          "note": "G3",
+          "length": 1
+        },
+        "105": {
+          "note": "B3",
+          "length": 1
+        },
+        "106": {
+          "note": "C4",
+          "length": 1
+        },
+        "107": {
+          "note": "E4",
+          "length": 1
+        },
+        "108": {
+          "note": "F4",
+          "length": 2
+        },
+        "110": {
+          "note": "E4",
+          "length": 1
+        },
+        "111": {
+          "note": "D4",
+          "length": 1
+        },
+        "112": {
+          "note": "A3",
+          "length": 1
+        },
+        "113": {
+          "note": "B3",
+          "length": 1
+        },
+        "114": {
+          "note": "C4",
+          "length": 1
+        },
+        "115": {
+          "note": "D4",
+          "length": 1
+        },
+        "116": {
+          "note": "E4",
+          "length": 2
+        },
+        "118": {
+          "note": "D4",
+          "length": 1
+        },
+        "119": {
+          "note": "C4",
+          "length": 1
+        },
+        "120": {
+          "note": "D4",
+          "length": 1
+        },
+        "121": {
+          "note": "E4",
+          "length": 1
+        },
+        "122": {
+          "note": "F4",
+          "length": 1
+        },
+        "123": {
+          "note": "G4",
+          "length": 1
+        },
+        "124": {
+          "note": "F4",
+          "length": 1
+        },
+        "125": {
+          "note": "E4",
+          "length": 1
+        },
+        "126": {
+          "note": "D4",
+          "length": 1
+        },
+        "127": {
+          "note": "C4",
+          "length": 1
+        }
+      },
+      "params": {
+        "attack": 0.005,
+        "decay": 0.08,
+        "sustain": 0.58,
+        "release": 0.1,
+        "timbre": 0.68
+      }
+    },
+    {
+      "id": 4,
+      "name": "🎸 Synth Bass",
+      "type": "triangle",
+      "volume": 0.62,
+      "color": "bg-gba-green",
+      "notes": {
+        "0": {
+          "note": "A3",
+          "length": 1
+        },
+        "1": {
+          "note": "A3",
+          "length": 1
+        },
+        "2": {
+          "note": "G3",
+          "length": 1
+        },
+        "3": {
+          "note": "A3",
+          "length": 1
+        },
+        "4": {
+          "note": "C3",
+          "length": 1
+        },
+        "5": {
+          "note": "A3",
+          "length": 1
+        },
+        "6": {
+          "note": "B3",
+          "length": 1
+        },
+        "7": {
+          "note": "C3",
+          "length": 1
+        },
+        "8": {
+          "note": "A3",
+          "length": 1
+        },
+        "9": {
+          "note": "E3",
+          "length": 1
+        },
+        "10": {
+          "note": "A3",
+          "length": 1
+        },
+        "11": {
+          "note": "G3",
+          "length": 1
+        },
+        "12": {
+          "note": "F3",
+          "length": 1
+        },
+        "13": {
+          "note": "E3",
+          "length": 1
+        },
+        "14": {
+          "note": "D3",
+          "length": 1
+        },
+        "15": {
+          "note": "E3",
+          "length": 1
+        },
+        "16": {
+          "note": "F3",
+          "length": 1
+        },
+        "17": {
+          "note": "A3",
+          "length": 1
+        },
+        "18": {
+          "note": "C3",
+          "length": 1
+        },
+        "19": {
+          "note": "F3",
+          "length": 1
+        },
+        "20": {
+          "note": "F3",
+          "length": 1
+        },
+        "21": {
+          "note": "E3",
+          "length": 1
+        },
+        "22": {
+          "note": "D3",
+          "length": 1
+        },
+        "23": {
+          "note": "D#3",
+          "length": 1
+        },
+        "24": {
+          "note": "G3",
+          "length": 1
+        },
+        "25": {
+          "note": "G3",
+          "length": 1
+        },
+        "26": {
+          "note": "D3",
+          "length": 1
+        },
+        "27": {
+          "note": "G3",
+          "length": 1
+        },
+        "28": {
+          "note": "B3",
+          "length": 1
+        },
+        "29": {
+          "note": "G3",
+          "length": 1
+        },
+        "30": {
+          "note": "F#3",
+          "length": 1
+        },
+        "31": {
+          "note": "G3",
+          "length": 1
+        },
+        "32": {
+          "note": "A3",
+          "length": 1
+        },
+        "33": {
+          "note": "E3",
+          "length": 1
+        },
+        "34": {
+          "note": "A3",
+          "length": 1
+        },
+        "35": {
+          "note": "G3",
+          "length": 1
+        },
+        "36": {
+          "note": "A3",
+          "length": 1
+        },
+        "37": {
+          "note": "C3",
+          "length": 1
+        },
+        "38": {
+          "note": "E3",
+          "length": 1
+        },
+        "39": {
+          "note": "A3",
+          "length": 1
+        },
+        "40": {
+          "note": "D3",
+          "length": 1
+        },
+        "41": {
+          "note": "A3",
+          "length": 1
+        },
+        "42": {
+          "note": "F3",
+          "length": 1
+        },
+        "43": {
+          "note": "D3",
+          "length": 1
+        },
+        "44": {
+          "note": "D3",
+          "length": 1
+        },
+        "45": {
+          "note": "E3",
+          "length": 1
+        },
+        "46": {
+          "note": "F3",
+          "length": 1
+        },
+        "47": {
+          "note": "G3",
+          "length": 1
+        },
+        "48": {
+          "note": "F3",
+          "length": 1
+        },
+        "49": {
+          "note": "C3",
+          "length": 1
+        },
+        "50": {
+          "note": "F3",
+          "length": 1
+        },
+        "51": {
+          "note": "G3",
+          "length": 1
+        },
+        "52": {
+          "note": "A3",
+          "length": 1
+        },
+        "53": {
+          "note": "F3",
+          "length": 1
+        },
+        "54": {
+          "note": "C3",
+          "length": 1
+        },
+        "55": {
+          "note": "F3",
+          "length": 1
+        },
+        "56": {
+          "note": "E3",
+          "length": 1
+        },
+        "57": {
+          "note": "G#3",
+          "length": 1
+        },
+        "58": {
+          "note": "B3",
+          "length": 1
+        },
+        "59": {
+          "note": "E3",
+          "length": 1
+        },
+        "60": {
+          "note": "G#3",
+          "length": 1
+        },
+        "61": {
+          "note": "E3",
+          "length": 1
+        },
+        "62": {
+          "note": "B3",
+          "length": 1
+        },
+        "63": {
+          "note": "G#3",
+          "length": 1
+        },
+        "64": {
+          "note": "C3",
+          "length": 1
+        },
+        "65": {
+          "note": "E3",
+          "length": 1
+        },
+        "66": {
+          "note": "G3",
+          "length": 1
+        },
+        "67": {
+          "note": "C3",
+          "length": 1
+        },
+        "68": {
+          "note": "C3",
+          "length": 1
+        },
+        "69": {
+          "note": "D3",
+          "length": 1
+        },
+        "70": {
+          "note": "D#3",
+          "length": 1
+        },
+        "71": {
+          "note": "E3",
+          "length": 1
+        },
+        "72": {
+          "note": "A#3",
+          "length": 1
+        },
+        "73": {
+          "note": "F3",
+          "length": 1
+        },
+        "74": {
+          "note": "A#3",
+          "length": 1
+        },
+        "75": {
+          "note": "A3",
+          "length": 1
+        },
+        "76": {
+          "note": "G3",
+          "length": 1
+        },
+        "77": {
+          "note": "F3",
+          "length": 1
+        },
+        "78": {
+          "note": "E3",
+          "length": 1
+        },
+        "79": {
+          "note": "D3",
+          "length": 1
+        },
+        "80": {
+          "note": "D3",
+          "length": 1
+        },
+        "81": {
+          "note": "F3",
+          "length": 1
+        },
+        "82": {
+          "note": "A3",
+          "length": 1
+        },
+        "83": {
+          "note": "D3",
+          "length": 1
+        },
+        "84": {
+          "note": "D3",
+          "length": 1
+        },
+        "85": {
+          "note": "C3",
+          "length": 1
+        },
+        "86": {
+          "note": "B3",
+          "length": 1
+        },
+        "87": {
+          "note": "A3",
+          "length": 1
+        },
+        "88": {
+          "note": "E3",
+          "length": 1
+        },
+        "89": {
+          "note": "E3",
+          "length": 1
+        },
+        "90": {
+          "note": "G#3",
+          "length": 1
+        },
+        "91": {
+          "note": "B3",
+          "length": 1
+        },
+        "92": {
+          "note": "E3",
+          "length": 1
+        },
+        "93": {
+          "note": "F#3",
+          "length": 1
+        },
+        "94": {
+          "note": "G#3",
+          "length": 1
+        },
+        "95": {
+          "note": "A3",
+          "length": 1
+        },
+        "96": {
+          "note": "A3",
+          "length": 1
+        },
+        "97": {
+          "note": "E3",
+          "length": 1
+        },
+        "98": {
+          "note": "A3",
+          "length": 1
+        },
+        "99": {
+          "note": "C3",
+          "length": 1
+        },
+        "100": {
+          "note": "E3",
+          "length": 1
+        },
+        "101": {
+          "note": "A3",
+          "length": 1
+        },
+        "102": {
+          "note": "B3",
+          "length": 1
+        },
+        "103": {
+          "note": "A3",
+          "length": 1
+        },
+        "104": {
+          "note": "G3",
+          "length": 1
+        },
+        "105": {
+          "note": "D3",
+          "length": 1
+        },
+        "106": {
+          "note": "G3",
+          "length": 1
+        },
+        "107": {
+          "note": "B3",
+          "length": 1
+        },
+        "108": {
+          "note": "D3",
+          "length": 1
+        },
+        "109": {
+          "note": "G3",
+          "length": 1
+        },
+        "110": {
+          "note": "A3",
+          "length": 1
+        },
+        "111": {
+          "note": "B3",
+          "length": 1
+        },
+        "112": {
+          "note": "F3",
+          "length": 1
+        },
+        "113": {
+          "note": "C3",
+          "length": 1
+        },
+        "114": {
+          "note": "F3",
+          "length": 1
+        },
+        "115": {
+          "note": "A3",
+          "length": 1
+        },
+        "116": {
+          "note": "F3",
+          "length": 1
+        },
+        "117": {
+          "note": "E3",
+          "length": 1
+        },
+        "118": {
+          "note": "D#3",
+          "length": 1
+        },
+        "119": {
+          "note": "E3",
+          "length": 1
+        },
+        "120": {
+          "note": "E3",
+          "length": 1
+        },
+        "121": {
+          "note": "G#3",
+          "length": 1
+        },
+        "122": {
+          "note": "B3",
+          "length": 1
+        },
+        "123": {
+          "note": "G#3",
+          "length": 1
+        },
+        "124": {
+          "note": "E3",
+          "length": 1
+        },
+        "125": {
+          "note": "D3",
+          "length": 1
+        },
+        "126": {
+          "note": "C3",
+          "length": 1
+        },
+        "127": {
+          "note": "B3",
+          "length": 1
+        }
+      },
+      "params": {
+        "attack": 0.003,
+        "decay": 0.05,
+        "sustain": 0.82,
+        "release": 0.04,
+        "timbre": 0.38
+      }
+    },
+    {
+      "id": 5,
+      "name": "🥁 Complex Drums",
+      "type": "drum",
+      "volume": 0.72,
+      "color": "bg-gba-blue",
+      "notes": {
+        "0": {
+          "note": "Kick",
+          "length": 1
+        },
+        "1": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "2": {
+          "note": "Kick",
+          "length": 1
+        },
+        "3": {
+          "note": "Kick",
+          "length": 1
+        },
+        "4": {
+          "note": "Snare",
+          "length": 1
+        },
+        "5": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "6": {
+          "note": "Kick",
+          "length": 1
+        },
+        "7": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "8": {
+          "note": "Kick",
+          "length": 1
+        },
+        "9": {
+          "note": "Kick",
+          "length": 1
+        },
+        "10": {
+          "note": "Clap",
+          "length": 1
+        },
+        "11": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "12": {
+          "note": "Snare",
+          "length": 1
+        },
+        "13": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "14": {
+          "note": "Kick",
+          "length": 1
+        },
+        "15": {
+          "note": "Kick",
+          "length": 1
+        },
+        "16": {
+          "note": "Kick",
+          "length": 1
+        },
+        "17": {
+          "note": "Kick",
+          "length": 1
+        },
+        "18": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "19": {
+          "note": "Kick",
+          "length": 1
+        },
+        "20": {
+          "note": "Snare",
+          "length": 1
+        },
+        "21": {
+          "note": "Clap",
+          "length": 1
+        },
+        "22": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "23": {
+          "note": "Kick",
+          "length": 1
+        },
+        "24": {
+          "note": "Kick",
+          "length": 1
+        },
+        "25": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "26": {
+          "note": "Kick",
+          "length": 1
+        },
+        "27": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "28": {
+          "note": "Snare",
+          "length": 1
+        },
+        "29": {
+          "note": "Kick",
+          "length": 1
+        },
+        "30": {
+          "note": "Kick",
+          "length": 1
+        },
+        "31": {
+          "note": "Clap",
+          "length": 1
+        },
+        "32": {
+          "note": "Kick",
+          "length": 1
+        },
+        "33": {
+          "note": "Kick",
+          "length": 1
+        },
+        "34": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "35": {
+          "note": "Kick",
+          "length": 1
+        },
+        "36": {
+          "note": "Snare",
+          "length": 1
+        },
+        "37": {
+          "note": "Kick",
+          "length": 1
+        },
+        "38": {
+          "note": "Kick",
+          "length": 1
+        },
+        "39": {
+          "note": "Clap",
+          "length": 1
+        },
+        "40": {
+          "note": "Kick",
+          "length": 1
+        },
+        "41": {
+          "note": "Kick",
+          "length": 1
+        },
+        "42": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "43": {
+          "note": "Kick",
+          "length": 1
+        },
+        "44": {
+          "note": "Snare",
+          "length": 1
+        },
+        "45": {
+          "note": "Kick",
+          "length": 1
+        },
+        "46": {
+          "note": "Clap",
+          "length": 1
+        },
+        "47": {
+          "note": "Kick",
+          "length": 1
+        },
+        "48": {
+          "note": "Clap",
+          "length": 1
+        },
+        "49": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "50": {
+          "note": "Kick",
+          "length": 1
+        },
+        "51": {
+          "note": "Kick",
+          "length": 1
+        },
+        "52": {
+          "note": "Snare",
+          "length": 1
+        },
+        "53": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "54": {
+          "note": "Kick",
+          "length": 1
+        },
+        "55": {
+          "note": "Kick",
+          "length": 1
+        },
+        "56": {
+          "note": "Kick",
+          "length": 1
+        },
+        "57": {
+          "note": "Snare",
+          "length": 1
+        },
+        "58": {
+          "note": "Kick",
+          "length": 1
+        },
+        "59": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "60": {
+          "note": "Snare",
+          "length": 1
+        },
+        "61": {
+          "note": "Kick",
+          "length": 1
+        },
+        "62": {
+          "note": "Kick",
+          "length": 1
+        },
+        "63": {
+          "note": "Kick",
+          "length": 1
+        },
+        "64": {
+          "note": "Kick",
+          "length": 1
+        },
+        "65": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "66": {
+          "note": "Kick",
+          "length": 1
+        },
+        "67": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "68": {
+          "note": "Snare",
+          "length": 1
+        },
+        "69": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "70": {
+          "note": "Kick",
+          "length": 1
+        },
+        "71": {
+          "note": "Clap",
+          "length": 1
+        },
+        "72": {
+          "note": "Kick",
+          "length": 1
+        },
+        "73": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "74": {
+          "note": "Kick",
+          "length": 1
+        },
+        "75": {
+          "note": "Kick",
+          "length": 1
+        },
+        "76": {
+          "note": "Snare",
+          "length": 1
+        },
+        "77": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "78": {
+          "note": "Kick",
+          "length": 1
+        },
+        "79": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "80": {
+          "note": "Kick",
+          "length": 1
+        },
+        "81": {
+          "note": "Kick",
+          "length": 1
+        },
+        "82": {
+          "note": "Kick",
+          "length": 1
+        },
+        "83": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "84": {
+          "note": "Snare",
+          "length": 1
+        },
+        "85": {
+          "note": "Clap",
+          "length": 1
+        },
+        "86": {
+          "note": "Kick",
+          "length": 1
+        },
+        "87": {
+          "note": "Kick",
+          "length": 1
+        },
+        "88": {
+          "note": "Kick",
+          "length": 1
+        },
+        "89": {
+          "note": "Kick",
+          "length": 1
+        },
+        "90": {
+          "note": "Snare",
+          "length": 1
+        },
+        "91": {
+          "note": "Kick",
+          "length": 1
+        },
+        "92": {
+          "note": "Kick",
+          "length": 1
+        },
+        "93": {
+          "note": "Snare",
+          "length": 1
+        },
+        "94": {
+          "note": "Kick",
+          "length": 1
+        },
+        "95": {
+          "note": "Clap",
+          "length": 1
+        },
+        "96": {
+          "note": "Kick",
+          "length": 1
+        },
+        "97": {
+          "note": "Clap",
+          "length": 1
+        },
+        "98": {
+          "note": "Kick",
+          "length": 1
+        },
+        "99": {
+          "note": "Kick",
+          "length": 1
+        },
+        "100": {
+          "note": "Snare",
+          "length": 1
+        },
+        "101": {
+          "note": "Kick",
+          "length": 1
+        },
+        "102": {
+          "note": "Clap",
+          "length": 1
+        },
+        "103": {
+          "note": "Kick",
+          "length": 1
+        },
+        "104": {
+          "note": "Kick",
+          "length": 1
+        },
+        "105": {
+          "note": "Snare",
+          "length": 1
+        },
+        "106": {
+          "note": "Kick",
+          "length": 1
+        },
+        "107": {
+          "note": "Kick",
+          "length": 1
+        },
+        "108": {
+          "note": "Clap",
+          "length": 1
+        },
+        "109": {
+          "note": "Kick",
+          "length": 1
+        },
+        "110": {
+          "note": "Snare",
+          "length": 1
+        },
+        "111": {
+          "note": "Kick",
+          "length": 1
+        },
+        "112": {
+          "note": "Kick",
+          "length": 1
+        },
+        "113": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "114": {
+          "note": "Kick",
+          "length": 1
+        },
+        "115": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "116": {
+          "note": "Snare",
+          "length": 1
+        },
+        "117": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "118": {
+          "note": "Kick",
+          "length": 1
+        },
+        "119": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "120": {
+          "note": "Kick",
+          "length": 1
+        },
+        "121": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "122": {
+          "note": "Snare",
+          "length": 1
+        },
+        "123": {
+          "note": "HiHat",
+          "length": 1
+        },
+        "124": {
+          "note": "Snare",
+          "length": 1
+        },
+        "125": {
+          "note": "Kick",
+          "length": 1
+        },
+        "126": {
+          "note": "Clap",
+          "length": 1
+        },
+        "127": {
+          "note": "Kick",
+          "length": 1
+        }
+      },
+      "params": {
+        "attack": 0.001,
+        "decay": 0.06,
+        "sustain": 0.35,
+        "release": 0.08,
+        "timbre": 0.92
+      }
+    },
+    {
+      "id": 6,
+      "name": "✨ Crystal Resonance",
+      "type": "sawtooth",
+      "volume": 0.15,
+      "color": "bg-[#a29bfe]",
+      "notes": {
+        "0": {
+          "note": "E5",
+          "length": 4
+        },
+        "4": {
+          "note": "C5",
+          "length": 4
+        },
+        "8": {
+          "note": "B4",
+          "length": 4
+        },
+        "12": {
+          "note": "A4",
+          "length": 4
+        },
+        "16": {
+          "note": "A4",
+          "length": 4
+        },
+        "20": {
+          "note": "B4",
+          "length": 4
+        },
+        "24": {
+          "note": "D5",
+          "length": 4
+        },
+        "28": {
+          "note": "B4",
+          "length": 4
+        },
+        "32": {
+          "note": "C5",
+          "length": 4
+        },
+        "36": {
+          "note": "D5",
+          "length": 4
+        },
+        "40": {
+          "note": "F5",
+          "length": 4
+        },
+        "44": {
+          "note": "E5",
+          "length": 4
+        },
+        "48": {
+          "note": "F5",
+          "length": 4
+        },
+        "52": {
+          "note": "E5",
+          "length": 4
+        },
+        "56": {
+          "note": "D5",
+          "length": 4
+        },
+        "60": {
+          "note": "G#4",
+          "length": 4
+        },
+        "64": {
+          "note": "G4",
+          "length": 4
+        },
+        "68": {
+          "note": "D#5",
+          "length": 4
+        },
+        "72": {
+          "note": "F5",
+          "length": 4
+        },
+        "76": {
+          "note": "D5",
+          "length": 4
+        },
+        "80": {
+          "note": "A4",
+          "length": 4
+        },
+        "84": {
+          "note": "B4",
+          "length": 4
+        },
+        "88": {
+          "note": "G#4",
+          "length": 4
+        },
+        "92": {
+          "note": "A4",
+          "length": 2
+        },
+        "94": {
+          "note": "B4",
+          "length": 2
+        },
+        "96": {
+          "note": "C5",
+          "length": 4
+        },
+        "100": {
+          "note": "D#5",
+          "length": 4
+        },
+        "104": {
+          "note": "D5",
+          "length": 4
+        },
+        "108": {
+          "note": "E5",
+          "length": 2
+        },
+        "110": {
+          "note": "F5",
+          "length": 2
+        },
+        "112": {
+          "note": "C5",
+          "length": 4
+        },
+        "116": {
+          "note": "B4",
+          "length": 4
+        },
+        "120": {
+          "note": "G#4",
+          "length": 4
+        },
+        "124": {
+          "note": "A4",
+          "length": 4
+        }
+      },
+      "params": {
+        "attack": 0.06,
+        "decay": 0.25,
+        "sustain": 0.5,
+        "release": 0.55,
+        "timbre": 0.72
+      }
+    }
+  ],
+  "bpm": 74,
+  "barCount": 8
+}
