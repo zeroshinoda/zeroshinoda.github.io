@@ -1,0 +1,676 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Bunny Mockup</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- React UMD -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;700;800&display=swap');
+        
+        body { 
+            font-family: 'Nunito', sans-serif; 
+            background-color: #f0f9ff;
+            user-select: none;
+            overflow: hidden;
+        }
+        h1, h2, h3, .btn-font { font-family: 'Fredoka', sans-serif; }
+
+        .pivot-point {
+            transition: all 0.2s;
+        }
+        .pivot-point:hover {
+            fill: #f43f5e;
+            r: 5;
+        }
+
+        .svg-canvas {
+            touch-action: none;
+            background-image: radial-gradient(#cbd5e1 1px, transparent 1px);
+            background-size: 40px 40px;
+        }
+
+        .btn-retro {
+            border-bottom-width: 4px;
+            transition: all 0.1s;
+        }
+        .btn-retro:active:not(:disabled) {
+            border-bottom-width: 0px;
+            transform: translateY(4px);
+        }
+    </style>
+</head>
+<body class="text-slate-800">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useMemo } = React;
+
+        const GRID_SIZE = 40;
+        const COLORS = [
+            '#f43f5e', '#fb923c', '#fbbf24', '#4ade80', 
+            '#22d3ee', '#818cf8', '#c084fc', '#f472b6',
+            '#64748b', '#000000'
+        ];
+
+        function App() {
+            const [points, setPoints] = useState([]); // All points ever used
+            const [lines, setLines] = useState([]); // [{ start: id, end: id, color: string }]
+            const [currentPath, setCurrentPath] = useState([]); // Array of point objects
+            const [currentColor, setCurrentColor] = useState(COLORS[0]);
+            const [hoverPoint, setHoverPoint] = useState(null);
+            const [appMode, setAppMode] = useState('draw'); // 'draw' or 'label'
+            const [currentTextSize, setCurrentTextSize] = useState(14);
+            const [currentTextColor, setCurrentTextColor] = useState('#1e293b');
+            const [colorTarget, setColorTarget] = useState('element'); // 'element' or 'text'
+            const containerRef = useRef(null);
+            const svgRef = useRef(null);
+
+            // History for Undo/Redo
+            const [history, setHistory] = useState([{ lines: [], shapes: [] }]);
+            const [historyIndex, setHistoryIndex] = useState(0);
+
+            const pushHistory = (newLines, newShapes) => {
+                const newEntry = { lines: [...newLines], shapes: [...newShapes] };
+                const newHistory = history.slice(0, historyIndex + 1);
+                setHistory([...newHistory, newEntry]);
+                setHistoryIndex(newHistory.length);
+            };
+
+            const undo = () => {
+                if (historyIndex > 0) {
+                    const prev = history[historyIndex - 1];
+                    setLines(prev.lines);
+                    setShapes(prev.shapes);
+                    setHistoryIndex(historyIndex - 1);
+                    AudioSys.play(330);
+                }
+            };
+
+            const redo = () => {
+                if (historyIndex < history.length - 1) {
+                    const next = history[historyIndex + 1];
+                    setLines(next.lines);
+                    setShapes(next.shapes);
+                    setHistoryIndex(historyIndex + 1);
+                    AudioSys.play(550);
+                }
+            };
+
+            // Audio for feedback (Bunny Style)
+            const AudioSys = useMemo(() => {
+                let ctx = null;
+                return {
+                    init: () => {
+                        if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+                        if (ctx.state === 'suspended') ctx.resume();
+                    },
+                    play: (freq, dur = 0.1) => {
+                        if (!ctx) return;
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                        gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + dur);
+                        osc.connect(gain);
+                        gain.connect(ctx.destination);
+                        osc.start();
+                        osc.stop(ctx.currentTime + dur);
+                    }
+                };
+            }, []);
+
+            const snapToGrid = (x, y) => {
+                const nx = Math.round(x / GRID_SIZE) * GRID_SIZE;
+                const ny = Math.round(y / GRID_SIZE) * GRID_SIZE;
+                return { x: nx, y: ny };
+            };
+
+            const findPointId = (p) => {
+                return points.findIndex(pt => pt.x === p.x && pt.y === p.y);
+            };
+
+            const handlePivotClick = (e) => {
+                AudioSys.init();
+                const rect = containerRef.current.getBoundingClientRect();
+                const rawX = e.clientX - rect.left;
+                const rawY = e.clientY - rect.top;
+                const p = snapToGrid(rawX, rawY);
+
+                // Add to total points if new
+                let pid = findPointId(p);
+                if (pid === -1) {
+                    setPoints(prev => [...prev, p]);
+                    pid = points.length;
+                }
+
+                // Logic for "closing" or continuing
+                const lastPoint = currentPath[currentPath.length - 1];
+
+                if (lastPoint && lastPoint.x === p.x && lastPoint.y === p.y) {
+                    // Double click on same point to stop line
+                    setCurrentPath([]);
+                    AudioSys.play(440, 0.2);
+                    return;
+                }
+
+                // Detect if it closes a loop in the CURRENT path
+                const existingIdx = currentPath.findIndex(pt => pt.x === p.x && pt.y === p.y);
+                
+                if (existingIdx !== -1) {
+                    // CLOSED LOOP
+                    const newLine = { start: lastPoint, end: p, color: currentColor };
+                    const nextLines = [...lines, newLine];
+                    setLines(nextLines);
+                    pushHistory(nextLines, shapes);
+                    
+                    setCurrentPath([]);
+                    AudioSys.play(880, 0.3);
+                } else {
+                    // CONTINUE LINE
+                    if (lastPoint) {
+                        const newLine = { start: lastPoint, end: p, color: currentColor };
+                        const nextLines = [...lines, newLine];
+                        setLines(nextLines);
+                        // We push to history for every segment for now, or maybe only on path end?
+                        // Let's do every segment for precision undo.
+                        pushHistory(nextLines, shapes);
+                    }
+                    setCurrentPath(prev => [...prev, p]);
+                    AudioSys.play(660);
+                }
+            };
+
+            const clearAll = () => {
+                setLines([]);
+                setShapes([]);
+                setPoints([]);
+                setCurrentPath([]);
+                pushHistory([], []);
+            };
+
+            // Detect closed shapes for filling
+            // A simple implementation: any closed loop of lines of the same color
+            // For MVP, we'll use a graph-based approach to find polygons
+            const detectedShapes = useMemo(() => {
+                // Group lines by color first
+                const shapesByColor = {};
+                lines.forEach(l => {
+                    if (!shapesByColor[l.color]) shapesByColor[l.color] = [];
+                    shapesByColor[l.color].push(l);
+                });
+
+                const polygons = [];
+                Object.entries(shapesByColor).forEach(([color, colorLines]) => {
+                    // Simple cycle detection for polygons
+                    // Build adjacency list
+                    const adj = {};
+                    const key = p => `${p.x},${p.y}`;
+                    colorLines.forEach(l => {
+                        const k1 = key(l.start);
+                        const k2 = key(l.end);
+                        if (!adj[k1]) adj[k1] = [];
+                        if (!adj[k2]) adj[k2] = [];
+                        adj[k1].push(l.end);
+                        adj[k2].push(l.start);
+                    });
+
+                    // Utility to find all cycles (simplified for MVP)
+                    // We'll just look for visited paths that close
+                    // Real implementation would use something like "planars" or "face detection"
+                    // But for MVP, let's just keep track of "Paths" that closed.
+                    // Actually, let's just store "Closed Polygons" as their own objects when they are formed.
+                });
+                
+                return []; // Placeholder for real polygon logic
+                // Instead, I'll modify the line adding logic to create "Shape" objects.
+            }, [lines]);
+
+            // Let's refine the line logic to explicitly track closed shapes
+            const [shapes, setShapes] = useState([]); // [{ points: [], color: string }]
+
+            // Overriding handlePivotClick to handle shape creation
+            const enhancedHandlePivotClick = (e) => {
+                AudioSys.init();
+                const rect = containerRef.current.getBoundingClientRect();
+                const rawX = e.clientX - rect.left;
+                const rawY = e.clientY - rect.top;
+                const p = snapToGrid(rawX, rawY);
+
+                const lastPoint = currentPath[currentPath.length - 1];
+
+                if (lastPoint && lastPoint.x === p.x && lastPoint.y === p.y) {
+                    setCurrentPath([]);
+                    return;
+                }
+
+                const existingIdxInCurrent = currentPath.findIndex(pt => pt.x === p.x && pt.y === p.y);
+                
+                // USER REQUIREMENT: "A line is considered closed when it close the loop of itself, or both of its end connect to another line/shape."
+                
+                // Let's check if this point is in ANY existing line or shape
+                const isPointUsedInOthers = lines.some(l => (l.start.x === p.x && l.start.y === p.y) || (l.end.x === p.x && l.end.y === p.y)) ||
+                                            shapes.some(s => s.points.some(pt => pt.x === p.x && pt.y === p.y));
+
+                if (existingIdxInCurrent !== -1) {
+                    // CLOSED LOOP OF ITSELF
+                    const shapePoints = [...currentPath.slice(existingIdxInCurrent), p];
+                    const nextShapes = [...shapes, { points: shapePoints, color: currentColor, label: '' }];
+                    setShapes(nextShapes);
+                    pushHistory(lines, nextShapes);
+                    setCurrentPath([]);
+                    AudioSys.play(880, 0.3);
+                } else if (lastPoint && isPointUsedInOthers && currentPath.length >= 1 && currentPath[0].isUsedElsewhere) {
+                    // BRIDGE: Start was an anchor, End is an anchor
+                    const shapePoints = [...currentPath, p];
+                    const nextShapes = [...shapes, { points: shapePoints, color: currentColor, label: '' }];
+                    const nextLines = [...lines, { start: lastPoint, end: p, color: currentColor, label: '' }];
+                    setShapes(nextShapes);
+                    setLines(nextLines);
+                    pushHistory(nextLines, nextShapes);
+                    
+                    setCurrentPath([]);
+                    AudioSys.play(880, 0.3);
+                } else {
+                    if (lastPoint) {
+                        const nextLines = [...lines, { start: lastPoint, end: p, color: currentColor, label: '' }];
+                        setLines(nextLines);
+                        pushHistory(nextLines, shapes);
+                    }
+                    setCurrentPath(prev => {
+                        const newPath = [...prev, { ...p, isUsedElsewhere: (prev.length === 0 ? isPointUsedInOthers : prev[0].isUsedElsewhere) }];
+                        return newPath;
+                    });
+                    AudioSys.play(660);
+                }
+            };
+
+            const handleLabelClick = (e) => {
+                if (!svgRef.current) return;
+                const rect = svgRef.current.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+
+                // 1. Check Shapes (Point-in-polygon) - Reverse order for topmost
+                for (let i = shapes.length - 1; i >= 0; i--) {
+                    if (isPointInPolygon({x, y}, shapes[i].points)) {
+                        const labelText = prompt("Enter label for this shape:", shapes[i].label?.text || "");
+                        if (labelText !== null) {
+                            const nextShapes = [...shapes];
+                            nextShapes[i] = { 
+                                ...nextShapes[i], 
+                                label: labelText ? { text: labelText, size: currentTextSize, color: currentTextColor } : null 
+                            };
+                            setShapes(nextShapes);
+                            pushHistory(lines, nextShapes);
+                            AudioSys.play(770);
+                        }
+                        return;
+                    }
+                }
+
+                // 2. Check Lines (Near distance)
+                for (let i = lines.length - 1; i >= 0; i--) {
+                    if (distToSegment({x, y}, lines[i].start, lines[i].end) < 15) {
+                        const labelText = prompt("Enter label for this line:", lines[i].label?.text || "");
+                        if (labelText !== null) {
+                            const nextLines = [...lines];
+                            nextLines[i] = { 
+                                ...nextLines[i], 
+                                label: labelText ? { text: labelText, size: currentTextSize, color: currentTextColor } : null 
+                            };
+                            setLines(nextLines);
+                            pushHistory(nextLines, shapes);
+                            AudioSys.play(770);
+                        }
+                        return;
+                    }
+                }
+            };
+
+            const exportToPNG = () => {
+                const allPoints = [];
+                lines.forEach(l => { allPoints.push(l.start); allPoints.push(l.end); });
+                shapes.forEach(s => s.points.forEach(p => allPoints.push(p)));
+
+                if (allPoints.length === 0) {
+                    alert("Draw something first!");
+                    return;
+                }
+
+                const PADDING = 40;
+                const minX = Math.min(...allPoints.map(p => p.x)) - PADDING;
+                const minY = Math.min(...allPoints.map(p => p.y)) - PADDING;
+                const maxX = Math.max(...allPoints.map(p => p.x)) + PADDING;
+                const maxY = Math.max(...allPoints.map(p => p.y)) + PADDING;
+                const width = maxX - minX;
+                const height = maxY - minY;
+
+                const svg = svgRef.current.cloneNode(true);
+                // Ensure correct attributes for export
+                svg.setAttribute("xmlns", "http://www.w3.org/2000/svg");
+                svg.setAttribute("width", "4000");
+                svg.setAttribute("height", "4000");
+                
+                // Remove the background grid rect
+                const gridRect = svg.querySelector('rect[fill="url(#pivotGrid)"]');
+                if (gridRect) gridRect.remove();
+                
+                // Add white background for the export
+                const bg = document.createElementNS("http://www.w3.org/2000/svg", "rect");
+                bg.setAttribute("width", "4000");
+                bg.setAttribute("height", "4000");
+                bg.setAttribute("fill", "white");
+                svg.insertBefore(bg, svg.firstChild);
+
+                const serializer = new XMLSerializer();
+                const svgString = serializer.serializeToString(svg);
+                const svgBlob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+                const url = URL.createObjectURL(svgBlob);
+
+                const img = new Image();
+                img.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Draw cropped portion
+                    ctx.drawImage(img, minX, minY, width, height, 0, 0, width, height);
+                    
+                    const pngUrl = canvas.toDataURL("image/png");
+                    const downloadLink = document.createElement("a");
+                    downloadLink.href = pngUrl;
+                    downloadLink.download = `bunny-mockup-${Date.now()}.png`;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    URL.revokeObjectURL(url);
+                    AudioSys.play(990);
+                };
+                img.src = url;
+            };
+
+            const isPointInPolygon = (p, poly) => {
+                let inside = false;
+                for (let i = 0, j = poly.length - 1; i < poly.length; j = i++) {
+                    const xi = poly[i].x, yi = poly[i].y;
+                    const xj = poly[j].x, yj = poly[j].y;
+                    const intersect = ((yi > p.y) !== (yj > p.y)) && (p.x < (xj - xi) * (p.y - yi) / (yj - yi) + xi);
+                    if (intersect) inside = !inside;
+                }
+                return inside;
+            };
+
+            const distToSegment = (p, v, w) => {
+                const l2 = (v.x - w.x)**2 + (v.y - w.y)**2;
+                if (l2 === 0) return Math.sqrt((p.x - v.x)**2 + (p.y - v.y)**2);
+                let t = ((p.x - v.x) * (w.x - v.x) + (p.y - v.y) * (w.y - v.y)) / l2;
+                t = Math.max(0, Math.min(1, t));
+                return Math.sqrt((p.x - (v.x + t * (w.x - v.x)))**2 + (p.y - (v.y + t * (w.y - v.y)))**2);
+            };
+
+            useEffect(() => {
+                const handleMouseMove = (e) => {
+                    if (!svgRef.current) return;
+                    const rect = svgRef.current.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    setHoverPoint(snapToGrid(x, y));
+                };
+
+                const handleKeyDown = (e) => {
+                    if (e.ctrlKey && e.key === 'z') undo();
+                    if (e.ctrlKey && e.key === 'y') redo();
+                };
+
+                window.addEventListener('mousemove', handleMouseMove);
+                window.addEventListener('keydown', handleKeyDown);
+                lucide.createIcons();
+                return () => {
+                    window.removeEventListener('mousemove', handleMouseMove);
+                    window.removeEventListener('keydown', handleKeyDown);
+                };
+            }, [historyIndex, history]); // Dependencies for shortcuts
+
+            return (
+                <div className="flex h-screen overflow-hidden">
+                <div className="md:w-64 w-48 bg-white border-r-4 border-sky-200 p-4 md:p-6 flex flex-col gap-6 z-10 shadow-xl overflow-y-auto">
+                        <div className="flex items-start md:items-center gap-2 md:gap-3">
+                            <div className="bg-sky-100 p-1.5 md:p-2 rounded-xl shrink-0">
+                                <i data-lucide="layout" className="text-sky-500 w-5 h-5 md:w-6 md:h-6"></i>
+                            </div>
+                            <h2 className="text-base md:text-2xl font-bold text-sky-500 leading-tight break-words">
+                                Bunny Mockup
+                            </h2>
+                        </div>
+
+                        <div className="space-y-3">
+                            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Tools</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <button 
+                                    onClick={() => setAppMode('draw')}
+                                    title="Draw Mode (Hold for grid snap)"
+                                    className={`py-3 rounded-xl border-2 transition-all flex items-center justify-center ${appMode === 'draw' ? 'bg-sky-500 text-white border-sky-700 shadow-lg scale-105' : 'bg-white text-slate-400 border-slate-100 hover:border-sky-300'}`}
+                                >
+                                    <i data-lucide="pencil" className="w-6 h-6"></i>
+                                </button>
+                                <button 
+                                    onClick={() => setAppMode('label')}
+                                    title="Label Mode (Click shape/line to label)"
+                                    className={`py-3 rounded-xl border-2 transition-all flex items-center justify-center ${appMode === 'label' ? 'bg-sky-500 text-white border-sky-700 shadow-lg scale-105' : 'bg-white text-slate-400 border-slate-100 hover:border-sky-300'}`}
+                                >
+                                    <i data-lucide="type" className="w-6 h-6"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Colors</h3>
+                                <div className="flex bg-slate-100 rounded-lg p-0.5">
+                                    <button 
+                                        onClick={() => setColorTarget('element')}
+                                        className={`px-2 py-0.5 text-[10px] rounded-md font-bold transition-all ${colorTarget === 'element' ? 'bg-white text-sky-600 shadow-sm' : 'text-slate-400'}`}
+                                    >Element</button>
+                                    <button 
+                                        onClick={() => setColorTarget('text')}
+                                        className={`px-2 py-0.5 text-[10px] rounded-md font-bold transition-all ${colorTarget === 'text' ? 'bg-white text-sky-600 shadow-sm' : 'text-slate-400'}`}
+                                    >Text</button>
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap gap-1.5">
+                                {COLORS.map(c => (
+                                    <button 
+                                        key={c}
+                                        onClick={() => {
+                                            if (colorTarget === 'element') setCurrentColor(c);
+                                            else setCurrentTextColor(c);
+                                        }}
+                                        className={`w-7 h-7 md:w-8 md:h-8 rounded-lg border-2 transition-transform active:scale-90 ${(colorTarget === 'element' ? currentColor : currentTextColor) === c ? 'border-slate-800 scale-110 shadow-md' : 'border-transparent opacity-70 hover:opacity-100'}`}
+                                        style={{ backgroundColor: c }}
+                                    />
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                                <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Text Size</h3>
+                                <span className="text-xs font-bold text-sky-500 bg-sky-50 px-2 py-0.5 rounded-md">{currentTextSize}px</span>
+                            </div>
+                            <input 
+                                type="range" min="8" max="40" value={currentTextSize}
+                                onChange={(e) => setCurrentTextSize(parseInt(e.target.value))}
+                                className="w-full h-2 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-sky-500"
+                            />
+                        </div>
+
+                        <div className="space-y-3 mt-auto pt-4 border-t border-slate-100">
+                            <div className="grid grid-cols-2 gap-3">
+                                <button 
+                                    onClick={undo}
+                                    disabled={historyIndex === 0}
+                                    title="Undo (Ctrl+Z)"
+                                    className="py-4 bg-amber-500 text-white rounded-2xl font-bold btn-retro border-amber-700 flex items-center justify-center disabled:opacity-40 disabled:border-amber-900"
+                                >
+                                    <i data-lucide="rotate-ccw" className="w-8 h-8"></i>
+                                </button>
+                                <button 
+                                    onClick={redo}
+                                    disabled={historyIndex === history.length - 1}
+                                    title="Redo (Ctrl+Y)"
+                                    className="py-4 bg-indigo-500 text-white rounded-2xl font-bold btn-retro border-indigo-700 flex items-center justify-center disabled:opacity-40 disabled:border-indigo-900"
+                                >
+                                    <i data-lucide="rotate-cw" className="w-8 h-8"></i>
+                                </button>
+                            </div>
+                            <button 
+                                onClick={clearAll}
+                                title="Clear All"
+                                className="w-full py-4 bg-rose-500 text-white rounded-2xl font-bold btn-retro border-rose-700 flex items-center justify-center"
+                            >
+                                <i data-lucide="trash-2" className="w-8 h-8"></i>
+                            </button>
+                            <button 
+                                onClick={exportToPNG}
+                                title="Export PNG"
+                                className="w-full py-4 bg-emerald-500 text-white rounded-2xl font-bold btn-retro border-emerald-700 flex items-center justify-center"
+                            >
+                                <i data-lucide="download" className="w-8 h-8"></i>
+                            </button>
+                            <a 
+                                href="../index.html"
+                                title="Back to Home"
+                                className="w-full py-4 bg-slate-200 text-slate-600 rounded-2xl font-bold border-slate-300 btn-retro flex items-center justify-center"
+                            >
+                                <i data-lucide="home" className="w-8 h-8"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    {/* Canvas Area */}
+                    <div 
+                        ref={containerRef}
+                        className={`flex-grow relative overflow-auto bg-slate-50 ${appMode === 'draw' ? 'cursor-crosshair' : 'cursor-text'}`}
+                        onPointerDown={appMode === 'draw' ? enhancedHandlePivotClick : handleLabelClick}
+                        onContextMenu={(e) => {
+                            e.preventDefault();
+                            if (currentPath.length > 0) {
+                                setCurrentPath([]);
+                                AudioSys.play(220);
+                            }
+                        }}
+                    >
+                        <svg 
+                            ref={svgRef}
+                            style={{ width: '4000px', height: '4000px' }}
+                            className="absolute top-0 left-0"
+                        >
+                            <defs>
+                                <pattern id="pivotGrid" width={GRID_SIZE} height={GRID_SIZE} patternUnits="userSpaceOnUse">
+                                    <circle cx="2" cy="2" r="2" fill="#e2e8f0" />
+                                </pattern>
+                            </defs>
+                            <rect width="100%" height="100%" fill="url(#pivotGrid)" />
+
+                            {/* Shapes */}
+                            {shapes.map((s, i) => (
+                                <g key={`shape-group-${i}`}>
+                                    <polygon 
+                                        points={s.points.map(p => `${p.x},${p.y}`).join(' ')}
+                                        fill={s.color}
+                                        fillOpacity="0.5"
+                                        stroke={s.color}
+                                        strokeWidth="4"
+                                        strokeLinejoin="round"
+                                    />
+                                    {s.label && (
+                                        <text
+                                            x={s.points.reduce((acc, p) => acc + p.x, 0) / s.points.length}
+                                            y={s.points.reduce((acc, p) => acc + p.y, 0) / s.points.length}
+                                            textAnchor="middle"
+                                            alignmentBaseline="middle"
+                                            fill={s.label.color || '#1e293b'}
+                                            fontSize={s.label.size || 14}
+                                            className="font-bold pointer-events-none select-none drop-shadow-sm"
+                                            style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.8))' }}
+                                        >
+                                            {s.label.text}
+                                        </text>
+                                    )}
+                                </g>
+                            ))}
+
+                            {/* Lines */}
+                            {lines.map((l, i) => (
+                                <g key={`line-group-${i}`}>
+                                    <line 
+                                        x1={l.start.x} y1={l.start.y}
+                                        x2={l.end.x} y2={l.end.y}
+                                        stroke={l.color}
+                                        strokeWidth="4"
+                                        strokeLinecap="round"
+                                    />
+                                    {l.label && (
+                                        <text
+                                            x={(l.start.x + l.end.x) / 2}
+                                            y={(l.start.y + l.end.y) / 2}
+                                            textAnchor="middle"
+                                            alignmentBaseline="middle"
+                                            fill={l.label.color || '#1e293b'}
+                                            fontSize={l.label.size || 12}
+                                            className="font-bold pointer-events-none select-none drop-shadow-sm"
+                                            style={{ filter: 'drop-shadow(0 0 2px rgba(255,255,255,0.8))' }}
+                                        >
+                                            {l.label.text}
+                                        </text>
+                                    )}
+                                </g>
+                            ))}
+
+                            {/* Active Preview Line */}
+                            {currentPath.length > 0 && hoverPoint && (
+                                <line 
+                                    x1={currentPath[currentPath.length - 1].x}
+                                    y1={currentPath[currentPath.length - 1].y}
+                                    x2={hoverPoint.x}
+                                    y2={hoverPoint.y}
+                                    stroke={currentColor}
+                                    strokeWidth="4"
+                                    strokeDasharray="4 4"
+                                    opacity="0.5"
+                                />
+                            )}
+
+                            {/* Hover Indicator */}
+                            {hoverPoint && (
+                                <circle 
+                                    cx={hoverPoint.x}
+                                    cy={hoverPoint.y}
+                                    r="6"
+                                    fill="none"
+                                    stroke={currentColor}
+                                    strokeWidth="2"
+                                />
+                            )}
+                        </svg>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

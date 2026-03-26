@@ -1,0 +1,1 @@
+A simple grid-based mockup tool for drawing lines and colorful shapes. Snaps to pivots for perfect alignment.
