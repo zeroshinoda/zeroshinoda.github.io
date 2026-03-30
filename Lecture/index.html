@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lecture 01: Programming & C - Bunny's Toys Box</title>
+    <!-- Styling -->
+    <link rel="stylesheet" href="lecture.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- CodeMirror for a professional "Academic" feel -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.12/mode/clike/clike.min.js"></script>
+    <!-- JSCPP as a full C/C++ engine -->
+    <script src="jscpp.es5.min.js"></script>
+</head>
+<body>
+
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <i data-lucide="graduation-cap"></i>
+            <h2>Introduction to C Programming</h2>
+        </div>
+        <nav class="sidebar-nav" id="sidebar-nav">
+            <!-- Populated by JS -->
+        </nav>
+        <div class="p-6 border-t border-slate-100">
+            <a href="../index.html" class="nav-item">
+                <i data-lucide="arrow-left"></i>
+                <span>Exit Launcher</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <div class="flex items-center gap-4">
+                <h1 id="lecture-title">Introduction to C Programming - Lecture 1</h1>
+                <span class="px-2 py-1 bg-slate-100 text-slate-500 text-[10px] uppercase font-bold rounded">LECTURE 01</span>
+            </div>
+            <div class="controls">
+                <button class="btn btn-secondary" onclick="prevSlide()">
+                    <i data-lucide="chevron-left"></i> Prev
+                </button>
+                <div class="text-sm font-bold text-slate-400 min-w-[50px] text-center">
+                    <span id="current-slide-num">1</span> / <span id="total-slides-num">10</span>
+                </div>
+                <button class="btn btn-primary" onclick="nextSlide()">
+                    Next <i data-lucide="chevron-right"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Slide Area -->
+        <div class="slides-container" id="slides-container">
+            <!-- Populated by JS -->
+        </div>
+
+        <footer class="lecture-footer">
+            © 2024 Bunny's Toy Box - Interactive Education Series
+        </footer>
+
+        <!-- Assistant Mascot -->
+        <div class="bunny-assistant" title="Need help? Click me!">
+            <i data-lucide="rabbit" class="animate-bounce"></i>
+        </div>
+    </main>
+
+    <!-- App Logic -->
+    <script src="lecture.js"></script>
+</body>
+</html>
