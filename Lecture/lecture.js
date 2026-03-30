@@ -116,8 +116,14 @@ const lectureData = [
         image: "images/von_neumann.png",
         content: `
             <h2>von Neumann Architecture (1945)</h2>
-            <p>John von Neumann formalized the concept of "Stored Program" computers.</p>
-            <p><strong>The 5 Components:</strong> Every computer you own—from your iPhone to a Supercomputer—uses his model: Input, Output, Memory, Control Unit, and ALU.</p>
+            <p>John von Neumann formalized the concept of "Stored Program" computers, where both instructions and data live in the same memory.</p>
+            <div class="von-neumann-grid">
+                <p><strong>1. Input:</strong> How data enters (Keyboard/Mouse).</p>
+                <p><strong>2. Output:</strong> How results exit (Monitor/Speaker).</p>
+                <p><strong>3. Memory:</strong> Where data/programs are stored (RAM).</p>
+                <p><strong>4. Control Unit:</strong> The "Brain's Manager" that decodes instructions and tells hardware what to do.</p>
+                <p><strong>5. ALU:</strong> The "Arithmetic Logic Unit" — the actual calculator for math and logic.</p>
+            </div>
         `,
         factoid: "Before this, 'reprogramming' a computer meant physically unplugging and moving thousands of wires!"
     },
@@ -255,6 +261,19 @@ const lectureData = [
     },
     // --- C FOUNDATIONS ---
     {
+        id: "fond-compiler",
+        title: "The Compiler: Translator",
+        type: "history-detail",
+        groupId: "c-foundations",
+        image: "images/performance_engine.png",
+        content: `
+            <h2>Source Code to Machine Code</h2>
+            <p>Computers are fast, but they are also quite simple. They only understand 0s and 1s (Machine Code).</p>
+            <p><strong>The Bridge:</strong> A <strong>Compiler</strong> is a special program that translates your C code into a format the machine can execute. Before you can run a program, it <em>must</em> be compiled!</p>
+        `,
+        factoid: "The C compiler checks for syntax errors—if you forget a semicolon, it's the compiler that stops you!"
+    },
+    {
         id: "fond-var",
         title: "Variables: Boxes of Memory",
         type: "history-detail",
@@ -281,6 +300,19 @@ const lectureData = [
             { line: "1", title: "Integers", content: "We declare <code>int hops</code> to store a whole number (10). This creates a 'hops' box on the memory shelf." },
             { line: "2", title: "Decimals", content: "We declare <code>float height</code> to store a decimal number (1.5). This uses a slightly bigger box in memory." }
         ]
+    },
+    {
+        id: "fond-char",
+        title: "The 'Char' Type",
+        type: "history-detail",
+        groupId: "c-foundations",
+        image: "images/language_tree.png",
+        content: `
+            <h2>Single Characters</h2>
+            <p>But what if we want to store a single letter? We use the <code>char</code> type.</p>
+            <p><strong>The Secret of ASCII:</strong> Computers actually store letters as numbers! For example, the letter 'A' is stored as the number 65. The <code>char</code> type handles this translation for you.</p>
+        `,
+        factoid: "A char occupies only 1 byte of memory—it's the smallest standard data type in C!"
     },
     {
         id: "fond-arith",
@@ -311,6 +343,40 @@ const lectureData = [
             { line: "1", title: "The Remainder", content: "<code>17 % 5</code> calculates how many are left over after 17 is divided by 5. The result is 2, which is stored in <code>rem</code>." },
             { line: "2", title: "Instant Plus One", content: "<code>hops++</code> is a super-fast way to write <code>hops = hops + 1</code>. It's used thousands of times in C!" }
         ]
+    },
+    {
+        id: "fond-format",
+        title: "Format Specifiers (%)",
+        type: "history-detail",
+        groupId: "c-foundations",
+        image: "images/memory_access.png",
+        content: `
+            <h2>The Translation Code</h2>
+            <p>When using <code>printf</code> or <code>scanf</code>, we use special symbols to tell C how to read a variable.</p>
+            <ul>
+                <li><code>%d</code>: For integers (think 'D' for Decimal).</li>
+                <li><code>%f</code>: For floats (think 'F' for Float).</li>
+                <li><code>%c</code>: For chars (think 'C' for Character).</li>
+            </ul>
+        `,
+        factoid: "The '%' sign acts like a placeholder—it tells the program exactly where to 'plug in' the value!"
+    },
+    {
+        id: "fond-escape",
+        title: "Escape Sequences (\\)",
+        type: "history-detail",
+        groupId: "c-foundations",
+        image: "images/drivers_vs_mechanics.png",
+        content: `
+            <h2>Special Commands</h2>
+            <p>Sometimes we need to print things that aren't letters, like a "New Line". We use the backslash <code>\\</code> as a special "escape" character.</p>
+            <ul>
+                <li><code>\\n</code>: Start a new line.</li>
+                <li><code>\\t</code>: Add a Tab (indent).</li>
+                <li><code>\\\\</code>: To print a literal backslash.</li>
+            </ul>
+        `,
+        factoid: "The backslash tells the computer: 'Don't print the next letter; treat it as a command instead!'"
     },
     {
         id: "fond-logic",
@@ -367,6 +433,46 @@ const lectureData = [
             { line: "2", title: "Equality Check", content: "Two equal signs <code>==</code> is a question: 'Does x actually contain 100?' It returns True or False without changing the values." }
         ]
     },
+    {
+        id: "fond-scanf",
+        title: "Talking Back (scanf)",
+        type: "history-detail",
+        groupId: "c-foundations",
+        image: "images/memory_access.png",
+        content: `
+            <h2>Accepting User Input</h2>
+            <p>So far, our programs only talk <em>at</em> you. To make them truly interactive, we use the <code>scanf</code> function to read input from the keyboard.</p>
+            <p><strong>The Ampersand (&):</strong> When using <code>scanf</code>, we must put an <code>&</code> before the variable name. This tells C exactly <em>where</em> in memory to store the user's answer.</p>
+        `,
+        factoid: "Think of & as the 'address' of the variable box—like a house number for the computer to deliver the data!"
+    },
+    {
+        id: "fond-scanf-ex",
+        title: "Input Example: X-Ray",
+        type: "code-detail",
+        groupId: "c-foundations",
+        code: `int age;\nscanf("%d", &age);`,
+        details: [
+            { line: "1", title: "Prepare the Box", content: "We must declare the variable <code>int age</code> first so the computer knows what type of data to expect." },
+            { line: "2", title: "The Delivery", content: "<code>scanf</code> pauses the program and waits for you to type a number. The <code>&</code> ensures that number is delivered straight to the 'age' box." }
+        ]
+    },
+    {
+        id: "fond-comments",
+        title: "Writing for Humans",
+        type: "history-detail",
+        groupId: "c-foundations",
+        image: "images/performance_engine.png",
+        content: `
+            <h2>Comments & Documentation</h2>
+            <p>The best code isn't just for computers; it's for humans too. <strong>Comments</strong> are parts of the code that the computer ignores entirely.</p>
+            <ul>
+                <li><code>//</code>: Single line comment.</li>
+                <li><code>/* ... */</code>: Multi-line comment block.</li>
+            </ul>
+        `,
+        factoid: "Writing good comments is like leaving a map for your future self—you'll thank yourself 6 months from now!"
+    },
     // --- C BASICS ---
     {
         id: "code-hello",
@@ -388,8 +494,8 @@ const lectureData = [
         details: [
             { line: "1", title: "The Header", content: "<code>#include &lt;stdio.h&gt;</code> tells the computer to load the 'Standard Input Output' library so we can use <code>printf</code>." },
             { line: "3", title: "The Entry Point", content: "<code>int main()</code> is the starting point of every C program. The computer looks for this specific name to begin execution." },
-            { line: "4", title: "The Action", content: "<code>printf</code> stands for 'print formatted'. It sends text to the screen. <code>\\n</code> creates a new line." },
-            { line: "5", title: "The Exit", content: "<code>return 0;</code> tells the Operating System that the program finished successfully without any errors." }
+            { line: "4", title: "Output & Escape", content: "<code>printf</code> sends text to the screen. <code>\\n</code> is an <strong>Escape Sequence</strong> that creates a new line." },
+            { line: "5", title: "The Exit", content: "<code>return 0;</code> tells the Operating System that the program finished successfully." }
         ]
     },
     {
@@ -411,7 +517,7 @@ const lectureData = [
         code: `#include <stdio.h>\n\nint main() {\n    int a = 15;\n    int b = 4;\n    \n    int sum = a + b;\n    int prod = a * b;\n    float div = (float)a / b;\n\n    printf("Sum: %d\\n", sum);\n    printf("Product: %d\\n", prod);\n    printf("Division: %.2f\\n", div);\n\n    return 0;\n}`,
         content: `
             <h2>Variables & Arithmetic</h2>
-            <p>Computers are essentially powerful calculators. In C, we declare variables with types (like <code>int</code> for integers or <code>float</code> for decimals).</p>
+            <p>Computers are essentially powerful calculators. In C, we declare variables with types (like <code>int</code> for integers or <code>float</code> for decimals) and use placeholders like <code>%d</code> to print them.</p>
         `
     },
     {
@@ -421,10 +527,10 @@ const lectureData = [
         groupId: "c-basics",
         code: `int a = 15;\nint b = 4;\nint sum = a + b;\nfloat div = (float)a / b;\nprintf("Sum: %d", sum);`,
         details: [
-            { line: "1-2", title: "Variable Declaration", content: "We use <code>int</code> to tell C we are storing whole numbers. <code>a</code> and <code>b</code> are names of boxes in memory." },
-            { line: "3", title: "The Operator", content: "The <code>+</code> sign performs addition. The result is stored in a new variable called <code>sum</code>." },
-            { line: "4", title: "Type Casting", content: "Because <code>a</code> and <code>b</code> are integers, we use <code>(float)</code> to temporarily treat them as decimals to get a precise division." },
-            { line: "5", title: "Format Specifiers", content: "Inside <code>printf</code>, <code>%d</code> is a placeholder for a decimal integer." }
+            { line: "1-2", title: "Variable Declaration", content: "We use <code>int</code> for whole numbers. <code>a</code> and <code>b</code> are names of boxes in memory." },
+            { line: "3", title: "The Assignment", content: "The <code>+</code> sign adds values together. The single <code>=</code> stores the result in the <code>sum</code> box." },
+            { line: "4", title: "Type Casting", content: "Because <code>a</code> and <code>b</code> are integers, we use <code>(float)</code> to temporarily treat them as decimals for a precise division." },
+            { line: "5", title: "Format Specifiers", content: "Inside <code>printf</code>, <code>%d</code> and <code>%f</code> are <strong>Format Specifiers</strong>. They tell C how to translate binary boxes into text." }
         ]
     },
     {
@@ -490,10 +596,10 @@ const lectureData = [
         groupId: "c-basics",
         code: `for (int i = 1; i <= 5; i++) {\n    // Repetitive Task\n}`,
         details: [
-            { line: "1 (Part A)", title: "Initialization", content: "<code>int i = 1</code> creates a counter variable and starts it at 1." },
-            { line: "1 (Part B)", title: "Condition", content: "The loop continues as long as <code>i &lt;= 5</code> is true. If it becomes false, the loop stops." },
-            { line: "1 (Part C)", title: "Increment", content: "<code>i++</code> means 'add 1 to i' after every single hop (iteration)." },
-            { line: "2", title: "The Loop Body", content: "The code inside the braces is what actually repeats. In this case, 5 hops!" }
+            { line: "1 (Part A)", title: "Initialization", content: "<code>int i = 1</code> creates a starting point at 1." },
+            { line: "1 (Part B)", title: "Comparison", content: "The loop continues as long as the <strong>Comparison</strong> <code>i &lt;= 5</code> remains true." },
+            { line: "1 (Part C)", title: "Increment", content: "<code>i++</code> is the <strong>Increment Operator</strong>. It adds 1 to the counter after every hop." },
+            { line: "2", title: "The Loop Body", content: "The code inside the braces is what actually repeats!" }
         ]
     },
     {
@@ -631,8 +737,8 @@ function showSlide(index) {
                     <pre>${codeLines.map(line => `<code>${line.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</code>`).join('')}</pre>
                 </div>
                 <div class="explanation-column">
-                    ${slideData.details.map(detail => `
-                        <div class="detail-item">
+                    ${slideData.details.map((detail, index) => `
+                        <div class="detail-item" style="animation-delay: ${index * 300}ms">
                             <span class="line-ref">Line ${detail.line}</span>
                             <h4>${detail.title}</h4>
                             <p>${detail.content}</p>

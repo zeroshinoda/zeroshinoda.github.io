@@ -115,6 +115,7 @@ body {
 .group-header:hover {
     background-color: var(--slate-50);
     color: var(--slate-900);
+    transform: translateX(2px);
 }
 
 .group-title {
@@ -175,6 +176,26 @@ body {
     background-color: var(--primary-light);
     color: var(--primary);
     border-color: #fce7f3; /* Pink-100 */
+    position: relative;
+    padding-left: 20px;
+}
+
+.nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 16px;
+    background-color: var(--primary);
+    border-radius: 99px;
+    animation: slideInIndicator 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideInIndicator {
+    0% { height: 0; opacity: 0; }
+    100% { height: 16px; opacity: 1; }
 }
 
 .nav-item .nav-num {
@@ -253,7 +274,7 @@ body {
 }
 
 .btn-primary:active {
-    transform: translateY(2px);
+    transform: translateY(2px) scale(0.98);
     box-shadow: 0 2px 0 var(--primary-dark);
 }
 
@@ -280,12 +301,23 @@ body {
 
 .slide.active {
     display: block;
-    animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+    animation: fadeScaleIn 1.0s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-@keyframes slideUp {
-    0% { transform: translateY(20px); opacity: 0; }
-    100% { transform: translateY(0); opacity: 1; }
+@keyframes fadeScaleIn {
+    0% { transform: translateY(10px) scale(0.985); opacity: 0; }
+    100% { transform: translateY(0) scale(1.0); opacity: 1; }
+}
+
+/* Staggered Content Animation */
+.detail-item {
+    opacity: 0;
+    animation: slideInRight 1.0s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes slideInRight {
+    0% { transform: translateX(20px); opacity: 0; }
+    100% { transform: translateX(0); opacity: 1; }
 }
 
 /* Typography in slides */
