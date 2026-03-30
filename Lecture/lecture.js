@@ -612,6 +612,40 @@ const lectureData = [
             <h2>Calculations in Loops</h2>
             <p>Loops are incredibly powerful for repetitive math. Here we calculate powers of 2 by multiplying the previous result 8 times!</p>
         `
+    },
+    {
+        id: "code-scanf",
+        title: "User Interaction (scanf)",
+        isCode: true,
+        groupId: "c-basics",
+        code: `#include <stdio.h>\n\nint main() {\n    int age;\n\n    printf("How old are you? ");\n    scanf("%d", &age);\n\n    printf("Wow, %d years old! That's a great age.\\n", age);\n\n    return 0;\n}`,
+        content: `
+            <h2>Accepting User Input</h2>
+            <p>To make programs interactive, we use <code>scanf</code>. This function pauses the program and waits for the user to provide data from the keyboard.</p>
+        `
+    },
+    {
+        id: "code-scanf-detail",
+        title: "scanf: X-Ray",
+        type: "code-detail",
+        groupId: "c-basics",
+        code: `int age;\nscanf("%d", &age);`,
+        details: [
+            { line: "1", title: "Declaration", content: "We must declare the variable first so the computer has a 'box' ready to store the input." },
+            { line: "2 (Part A)", title: "The placeholder", content: "<code>%d</code> tells C to expect an integer from the user." },
+            { line: "2 (Part B)", title: "The Address (&)", content: "The ampersand <code>&</code> is like a house address. it tells <code>scanf</code> exactly which memory box to 'deliver' the value to!" }
+        ]
+    },
+    {
+        id: "code-scanf-extend",
+        title: "scanf: Multiple Inputs",
+        isCode: true,
+        groupId: "c-basics",
+        code: `#include <stdio.h>\n\nint main() {\n    int d, m, y;\n\n    printf("Enter birthday (DD MM YYYY): ");\n    scanf("%d %d %d", &d, &m, &y);\n\n    printf("You were born on the %d day of month %d in %d!\\n", d, m, y);\n\n    return 0;\n}`,
+        content: `
+            <h2>Reading Multiple Values</h2>
+            <p>You can read multiple pieces of data in a single <code>scanf</code> call by separating the format specifiers with spaces.</p>
+        `
     }
 ];
 
@@ -767,6 +801,10 @@ function showSlide(index) {
                 <div class="editor-area" id="editor-wrapper">
                     <textarea id="code-editor">${slideData.code}</textarea>
                 </div>
+                <div class="console-input-area" style="${slideData.code.includes('scanf') ? 'display: flex;' : 'display: none;'}">
+                    <i data-lucide="terminal"></i>
+                    <input type="text" id="stdin-input" value="0" placeholder="Type inputs here (e.g. 25 or 12 05 1990)..." autocomplete="off">
+                </div>
                 <div class="console-area" id="console-output">
                     <div class="console-status">System Console Ready...</div>
                     <span>Click 'Run Code' to see the output here.</span>
@@ -825,6 +863,7 @@ function runCode() {
     
     const code = editor.getValue();
     const outputArea = document.getElementById('console-output');
+    const stdinField = document.getElementById('stdin-input');
     
     outputArea.innerHTML = `<div class="console-status">Compiling and Executing...</div>`;
     
@@ -832,8 +871,13 @@ function runCode() {
     let outputBuffer = "";
     
     try {
+        // Preparation for JSCPP Input Handling
+        let input = stdinField ? stdinField.value : "";
+        if (input && !input.endsWith("\n")) input += "\n";
+
         // Configuration for JSCPP
         const config = {
+            memory_size: 1 * 1024 * 1024,
             stdio: {
                 write: (s) => {
                     outputBuffer += s;
@@ -841,15 +885,12 @@ function runCode() {
                 }
             },
             includes: {
-                stdio: true, // Allow standard I/O
+                stdio: true, 
                 math: true
             }
         };
 
-        // Create the engine
-        // JSCPP expects: (code, input, config)
-        // We use empty input for now
-        const exitCode = JSCPP.run(code, "", config);
+        const exitCode = JSCPP.run(code, input, config);
         
         // Format and display the output
         outputArea.innerHTML = `

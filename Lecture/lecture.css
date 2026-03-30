@@ -522,6 +522,36 @@ body {
     text-transform: uppercase;
 }
 
+.console-input-area {
+    background-color: #111;
+    border-top: 1px solid #333;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.console-input-area i {
+    color: #4ade80;
+    width: 14px;
+    height: 14px;
+    opacity: 0.7;
+}
+
+.console-input-area input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.875rem;
+    outline: none;
+}
+
+.console-input-area input::placeholder {
+    color: #444;
+}
+
 /* Academic lists */
 .academic-list {
     margin-top: 24px;
